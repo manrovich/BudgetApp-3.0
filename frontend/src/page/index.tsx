@@ -8,11 +8,12 @@ function App() {
 
     const handleClickSend = async () => {
         try {
-            const res = await fetch('http://localhost:5000', {
+            const res = await fetch('http://localhost:5000/api/test/value', {
                 method: 'POST',
                 headers: {
                     'Content-type': 'application/json',
-                }
+                },
+                body: JSON.stringify(data),
             });
             setNotification(String(await res.json()));
         } catch (e) {
@@ -22,7 +23,7 @@ function App() {
 
     const handleClickGet = async () => {
         try {
-            const res = await fetch('http://localhost:5000');
+            const res = await fetch('http://localhost:5000/api/test/value');
             if (res.status === 200) {
                 setData(await res.json());
                 return;
