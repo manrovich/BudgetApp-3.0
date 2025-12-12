@@ -1,6 +1,9 @@
-export function App() {
+import { Outlet } from 'react-router-dom';
 
+export function App() {
     return (
-        <main>test</main>
-    )
+        <main>
+            <Outlet />
+        </main>
+    );
 }
