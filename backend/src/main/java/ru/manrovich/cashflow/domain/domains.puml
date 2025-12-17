@@ -1,0 +1,16 @@
+@startmindmap
+'https://plantuml.com/mindmap-diagram
+
+title Назначение доменов
+
+* ledger - факты движения денег
+** транзакции
+** кошельки
+* budget - ведение бюджета
+** категории
+** лимиты
+** план/факт
+* obligation - финансовые обязательства
+** долги
+** займы
+@endmindmap

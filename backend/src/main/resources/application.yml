@@ -1,0 +1,21 @@
+server:
+  port: 5000
+spring:
+  application:
+    name: cashflow
+  datasource:
+    url: jdbc:postgresql://localhost:5436/budget
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+    ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  liquibase:
+    enabled: false
+    change-log: classpath:db/postgres/changelog/db.changelog-master.xml
