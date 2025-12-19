@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.manrovich.cashflow.application.common.ApiErrorResponse;
+import ru.manrovich.cashflow.domain.kernel.exception.ConflictException;
 import ru.manrovich.cashflow.domain.kernel.exception.DomainException;
 import ru.manrovich.cashflow.domain.kernel.exception.NotFoundException;
 import ru.manrovich.cashflow.domain.kernel.exception.ValidationException;
@@ -28,6 +29,11 @@ public class RestExceptionHandler {
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleNotFound(NotFoundException ex, HttpServletRequest request) {
         return build(HttpStatus.NOT_FOUND, ex, request, false);
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ApiErrorResponse> handleConflict(ConflictException ex, HttpServletRequest request) {
+        return build(HttpStatus.CONFLICT, ex, request, false);
     }
 
     @ExceptionHandler(DomainException.class)

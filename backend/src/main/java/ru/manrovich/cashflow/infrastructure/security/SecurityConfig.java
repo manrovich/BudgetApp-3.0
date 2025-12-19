@@ -1,4 +1,4 @@
-package ru.manrovich.cashflow.infrastructure.config;
+package ru.manrovich.cashflow.infrastructure.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

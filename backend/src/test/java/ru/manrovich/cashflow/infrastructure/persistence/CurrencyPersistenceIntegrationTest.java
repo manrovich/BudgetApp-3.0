@@ -12,7 +12,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import ru.manrovich.cashflow.application.BudgetApplication;
+import ru.manrovich.cashflow.BudgetApplication;
 import ru.manrovich.cashflow.domain.kernel.id.CurrencyId;
 import ru.manrovich.cashflow.domain.reference.currency.model.Currency;
 import ru.manrovich.cashflow.infrastructure.persistence.jpa.adapter.CurrencyQueryPortAdapter;

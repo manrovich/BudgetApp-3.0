@@ -8,24 +8,25 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.UUID;
 
 @Entity
-@Table(name = "currency")
+@Table(name = "category")
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CurrencyEntity {
+public class CategoryEntity {
 
     @Id
-    @Column(name = "code", nullable = false, length = 3)
-    private String code;
+    @Column(name = "id", nullable = false)
+    private UUID id;
 
-    @Column(name = "name", nullable = false, length = 64)
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
+
+    @Setter
+    @Column(name = "name", nullable = false, length = 128)
     private String name;
-
-    @Column(name = "scale", nullable = false)
-    private int scale;
-
-    @Column(name = "symbol", length = 8)
-    private String symbol;
 }

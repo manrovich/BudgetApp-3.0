@@ -4,8 +4,8 @@ import ru.manrovich.cashflow.domain.kernel.validation.DomainPreconditions;
 
 import java.util.UUID;
 
-public record CategoryId(UUID value) {
-    public CategoryId {
-        DomainPreconditions.notNull(value, "CategoryId must not be null");
+public record UserId(UUID value) {
+    public UserId {
+        DomainPreconditions.notNull(value, "UserId must not be null");
     }
 }
