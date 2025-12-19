@@ -12,8 +12,13 @@ public class CreateCategoryHandler {
     private final CreateCategoryUseCase useCase;
 
     public CreateCategoryResponse handle(CreateCategoryRequest request) {
-        CreateCategoryResult result = useCase.execute(new CreateCategoryCommand(request.name()));
+        CreateCategoryResult result = useCase.execute(new CreateCategoryCommand(
+                request.name()
+        ));
 
-        return new CreateCategoryResponse(result.categoryId(), result.name());
+        return new CreateCategoryResponse(
+                result.categoryId(),
+                result.name()
+        );
     }
 }
