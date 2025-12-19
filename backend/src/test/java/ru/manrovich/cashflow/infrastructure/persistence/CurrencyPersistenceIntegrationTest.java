@@ -2,56 +2,31 @@ package ru.manrovich.cashflow.infrastructure.persistence;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import ru.manrovich.cashflow.BudgetApplication;
 import ru.manrovich.cashflow.domain.kernel.id.CurrencyId;
 import ru.manrovich.cashflow.domain.reference.currency.model.Currency;
 import ru.manrovich.cashflow.infrastructure.persistence.jpa.adapter.CurrencyQueryPortAdapter;
 import ru.manrovich.cashflow.infrastructure.persistence.jpa.adapter.CurrencyRepositoryAdapter;
 import ru.manrovich.cashflow.infrastructure.persistence.jpa.mapper.CurrencyEntityMapper;
 import ru.manrovich.cashflow.infrastructure.persistence.jpa.repository.CurrencyJpaRepository;
+import ru.manrovich.cashflow.testing.persistence.AbstractPostgresIntegrationTest;
+import ru.manrovich.cashflow.testing.persistence.JpaIntegrationTest;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-// TODO копипаста. Нужно проверить
-@Testcontainers
-@DataJpaTest
-@ContextConfiguration(classes = BudgetApplication.class)
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@JpaIntegrationTest
 @Import({
         CurrencyRepositoryAdapter.class,
         CurrencyQueryPortAdapter.class,
         CurrencyEntityMapper.class
 })
-class CurrencyPersistenceIntegrationTest {
-
-    @Container
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
-            .withDatabaseName("cashflow_test")
-            .withUsername("test")
-            .withPassword("test");
-
-    @DynamicPropertySource
-    static void properties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-
-        // Важно: у тебя Liquibase выключен, значит схему создаёт Hibernate
-        registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
-        registry.add("spring.jpa.properties.hibernate.dialect", () -> "org.hibernate.dialect.PostgreSQLDialect");
-    }
+class CurrencyPersistenceIntegrationTest extends AbstractPostgresIntegrationTest {
 
     @Autowired
     private CurrencyRepositoryAdapter currencyRepositoryAdapter;
@@ -60,7 +35,7 @@ class CurrencyPersistenceIntegrationTest {
     private CurrencyQueryPortAdapter currencyQueryPortAdapter;
 
     @Autowired
-    private CurrencyJpaRepository currencyJpaRepository; // чтобы flush() делать явно
+    private CurrencyJpaRepository currencyJpaRepository;
 
     @Test
     void exists_shouldReturnFalse_whenCurrencyNotSaved() {
@@ -72,7 +47,7 @@ class CurrencyPersistenceIntegrationTest {
         Currency rub = new Currency(new CurrencyId("RUB"), "Russian Ruble", 2, "₽");
 
         currencyRepositoryAdapter.save(rub);
-        currencyJpaRepository.flush(); // чтобы гарантированно улетело в БД
+        currencyJpaRepository.flush();
 
         assertTrue(currencyQueryPortAdapter.exists(new CurrencyId("RUB")));
 
@@ -99,15 +74,13 @@ class CurrencyPersistenceIntegrationTest {
 
     @Test
     void dbConstraints_shouldRejectTooLongName() {
-        // В entity у тебя name length = 64, а в домене это не проверяется
-        // Проверяем, что БД действительно режет/отбрасывает, а не молча сохраняет
         String tooLongName = "X".repeat(65);
 
         Currency bad = new Currency(new CurrencyId("EUR"), tooLongName, 2, "€");
 
         assertThrows(DataIntegrityViolationException.class, () -> {
             currencyRepositoryAdapter.save(bad);
-            currencyJpaRepository.flush(); // важно: исключение часто вылетает именно на flush
+            currencyJpaRepository.flush();
         });
     }
 }

@@ -1,27 +1,35 @@
 package ru.manrovich.cashflow.application.reference.currency.usecase.seed;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.manrovich.cashflow.domain.kernel.id.CurrencyId;
-import ru.manrovich.cashflow.domain.reference.currency.model.Currency;
 import ru.manrovich.cashflow.domain.reference.currency.port.CurrencyQueryPort;
 import ru.manrovich.cashflow.domain.reference.currency.port.CurrencyRepository;
+import ru.manrovich.cashflow.testing.data.TestCurrencies;
+import ru.manrovich.cashflow.testing.fake.InMemoryCurrencyStore;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class SeedCurrenciesServiceTest {
 
+    private InMemoryCurrencyStore store;
+    private SeedCurrenciesService service;
+
+    @BeforeEach
+    void setUp() {
+        store = new InMemoryCurrencyStore();
+        service = new SeedCurrenciesService(store, store);
+    }
+
     @Test
     void shouldInsertMissingCurrencies_andThenBeIdempotent() {
-        InMemoryCurrencyRepository repo = new InMemoryCurrencyRepository();
-        InMemoryCurrencyQueryPort queryPort = new InMemoryCurrencyQueryPort(repo);
-
-        SeedCurrenciesService service = new SeedCurrenciesService(repo, queryPort);
-
         SeedCurrenciesResult first = service.execute(new SeedCurrenciesCommand(false));
         int totalSeedCount = first.inserted() + first.skipped();
 
@@ -38,76 +46,53 @@ class SeedCurrenciesServiceTest {
 
     @Test
     void dryRun_shouldNotPersistAnything() {
-        InMemoryCurrencyRepository repo = new InMemoryCurrencyRepository();
-        InMemoryCurrencyQueryPort queryPort = new InMemoryCurrencyQueryPort(repo);
-
-        SeedCurrenciesService service = new SeedCurrenciesService(repo, queryPort);
-
         SeedCurrenciesResult dry = service.execute(new SeedCurrenciesCommand(true));
 
         assertTrue(dry.inserted() > 0, "Dry run still computes what would be inserted");
         assertTrue(dry.dryRun());
 
-        assertFalse(queryPort.exists(new CurrencyId("USD")));
-        assertTrue(repo.isEmpty(), "Repository must stay empty after dryRun");
+        assertFalse(store.exists(new CurrencyId("USD")));
+        assertTrue(store.isEmpty(), "Repository must stay empty after dryRun");
     }
 
     @Test
     void shouldSkipAlreadyExistingCurrency() {
-        InMemoryCurrencyRepository repo = new InMemoryCurrencyRepository();
-        InMemoryCurrencyQueryPort queryPort = new InMemoryCurrencyQueryPort(repo);
-
-        // Предзаполним одну валюту из seed (USD почти наверняка есть)
-        repo.save(new Currency(new CurrencyId("USD"), "US Dollar", 2, "$"));
-
-        SeedCurrenciesService service = new SeedCurrenciesService(repo, queryPort);
+        store.save(TestCurrencies.usd());
 
         SeedCurrenciesResult result = service.execute(new SeedCurrenciesCommand(false));
         int totalSeedCount = result.inserted() + result.skipped();
 
         assertTrue(totalSeedCount > 0);
         assertTrue(result.skipped() >= 1, "At least one currency should be skipped (USD already exists)");
-        assertTrue(queryPort.exists(new CurrencyId("USD")));
+        assertTrue(store.exists(new CurrencyId("USD")));
     }
 
-    private static final class InMemoryCurrencyRepository implements CurrencyRepository {
+    @Test
+    void dryRun_shouldNotCallSaveAll() {
+        CurrencyRepository repo = mock(CurrencyRepository.class);
+        CurrencyQueryPort query = mock(CurrencyQueryPort.class);
 
-        private final Map<String, Currency> storage = new ConcurrentHashMap<>();
+        when(query.exists(any(CurrencyId.class))).thenReturn(false);
 
-        @Override
-        public Currency save(Currency currency) {
-            storage.put(currency.code().value(), currency);
-            return currency;
-        }
+        SeedCurrenciesService service = new SeedCurrenciesService(repo, query);
 
-        @Override
-        public void saveAll(Collection<Currency> currencies) {
-            for (Currency c : currencies) {
-                save(c);
-            }
-        }
+        service.execute(new SeedCurrenciesCommand(true));
 
-        @Override
-        public Optional<Currency> findByCode(CurrencyId code) {
-            return Optional.ofNullable(storage.get(code.value()));
-        }
-
-        boolean isEmpty() {
-            return storage.isEmpty();
-        }
+        verify(repo, never()).saveAll(any());
     }
 
-    private static final class InMemoryCurrencyQueryPort implements CurrencyQueryPort {
+    @Test
+    void shouldNotCallSaveAll_whenNothingToInsert() {
+        CurrencyRepository repo = mock(CurrencyRepository.class);
+        CurrencyQueryPort query = mock(CurrencyQueryPort.class);
 
-        private final InMemoryCurrencyRepository repository;
+        // Пусть всё "уже существует" => toInsert пустой
+        when(query.exists(any(CurrencyId.class))).thenReturn(true);
 
-        private InMemoryCurrencyQueryPort(InMemoryCurrencyRepository repository) {
-            this.repository = repository;
-        }
+        SeedCurrenciesService service = new SeedCurrenciesService(repo, query);
 
-        @Override
-        public boolean exists(CurrencyId code) {
-            return repository.findByCode(code).isPresent();
-        }
+        service.execute(new SeedCurrenciesCommand(false));
+
+        verify(repo, never()).saveAll(any());
     }
 }

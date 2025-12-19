@@ -16,7 +16,7 @@ public class CategoryController {
 
     private final CreateCategoryHandler createCategoryHandler;
 
-    @PostMapping("/create")
+    @PostMapping
     public CreateCategoryResponse create(@RequestBody CreateCategoryRequest request) {
         return createCategoryHandler.handle(request);
     }
