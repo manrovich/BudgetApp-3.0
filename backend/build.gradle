@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.12'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.springdoc.openapi-gradle-plugin' version '1.9.0'
 }
 
 group = 'ru.manrovich'
@@ -46,4 +47,17 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+openApi {
+	apiDocsUrl.set("http://localhost:5000/v3/api-docs.yaml")
+	outputDir.set(file("$buildDir/openapi"))
+	outputFileName.set("openapi.yaml")
+	waitTimeInSeconds.set(30)
+
+	customBootRun {
+		args = [
+				"--spring.profiles.active=openapi"
+		]
+	}
 }

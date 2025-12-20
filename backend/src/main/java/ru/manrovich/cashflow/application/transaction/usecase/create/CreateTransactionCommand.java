@@ -1,10 +1,11 @@
 package ru.manrovich.cashflow.application.transaction.usecase.create;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 public record CreateTransactionCommand(
         String walletId,
         String categoryId,
-        String amount,
+        BigDecimal amount,
         Instant occurredAt
 ) {}

@@ -1,5 +1,6 @@
 package ru.manrovich.cashflow.application.reference.category.web;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,7 +21,7 @@ public class CategoryController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CreateCategoryResponse create(@RequestBody CreateCategoryRequest request) {
+    public CreateCategoryResponse create(@Valid @RequestBody CreateCategoryRequest request) {
         return createCategoryHandler.handle(request);
     }
 }

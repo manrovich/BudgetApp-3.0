@@ -17,6 +17,7 @@ import ru.manrovich.cashflow.domain.transaction.model.Transaction;
 import ru.manrovich.cashflow.domain.transaction.port.TransactionRepository;
 import ru.manrovich.cashflow.domain.wallet.port.WalletQueryPort;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -64,7 +65,7 @@ class CreateTransactionServiceTest {
         CreateTransactionCommand cmd = new CreateTransactionCommand(
                 walletUuid.toString(),
                 categoryUuid.toString(),
-                "100.00",
+                new BigDecimal("100.00"),
                 Instant.parse("2025-01-01T10:00:00Z")
         );
 
@@ -95,7 +96,7 @@ class CreateTransactionServiceTest {
         CreateTransactionCommand cmd = new CreateTransactionCommand(
                 walletUuid.toString(),
                 null,
-                "10",
+                new BigDecimal("10"),
                 Instant.parse("2025-01-01T10:00:00Z")
         );
 
@@ -119,7 +120,7 @@ class CreateTransactionServiceTest {
         CreateTransactionCommand cmd = new CreateTransactionCommand(
                 walletUuid.toString(),
                 categoryUuid.toString(),
-                "10",
+                new BigDecimal("10"),
                 Instant.parse("2025-01-01T10:00:00Z")
         );
 
@@ -139,7 +140,7 @@ class CreateTransactionServiceTest {
         CreateTransactionCommand cmd = new CreateTransactionCommand(
                 walletUuid.toString(),
                 null,
-                "0",
+                new BigDecimal("0"),
                 Instant.parse("2025-01-01T10:00:00Z")
         );
 

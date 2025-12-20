@@ -1,5 +1,6 @@
 package ru.manrovich.cashflow.application.transaction.web;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,7 +21,7 @@ public class TransactionController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CreateTransactionResponse create(@RequestBody CreateTransactionRequest request) {
+    public CreateTransactionResponse create(@Valid @RequestBody CreateTransactionRequest request) {
         return createTransactionHandler.handle(request);
     }
 }
