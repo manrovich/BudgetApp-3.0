@@ -9,11 +9,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.manrovich.cashflow.application.common.web.TraceIdFilter;
-import ru.manrovich.cashflow.application.transaction.usecase.create.CreateTransactionCommand;
-import ru.manrovich.cashflow.application.transaction.usecase.create.CreateTransactionResult;
-import ru.manrovich.cashflow.application.transaction.usecase.create.CreateTransactionUseCase;
-import ru.manrovich.cashflow.application.transaction.web.create.CreateTransactionHandler;
-import ru.manrovich.cashflow.application.transaction.web.create.CreateTransactionRequest;
+import ru.manrovich.cashflow.application.transaction.usecase.TransactionUseCase;
+import ru.manrovich.cashflow.application.transaction.usecase.command.CreateTransactionCommand;
+import ru.manrovich.cashflow.application.transaction.usecase.result.CreateTransactionResult;
+import ru.manrovich.cashflow.application.transaction.web.dto.CreateTransactionRequest;
+import ru.manrovich.cashflow.application.transaction.web.mapper.TransactionWebMapper;
 import ru.manrovich.cashflow.domain.kernel.exception.NotFoundException;
 import ru.manrovich.cashflow.domain.kernel.exception.ValidationException;
 import ru.manrovich.cashflow.testing.web.WebContractTestBase;
@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = TransactionController.class)
-@Import(CreateTransactionHandler.class)
+@Import(TransactionWebMapper.class)
 class TransactionControllerWebContractTest extends WebContractTestBase {
 
     @Autowired
@@ -45,11 +45,11 @@ class TransactionControllerWebContractTest extends WebContractTestBase {
     ObjectMapper objectMapper;
 
     @MockitoBean
-    CreateTransactionUseCase useCase;
+    TransactionUseCase useCase;
 
     @Test
     void create_shouldReturn201_whenOk_andSetTraceHeader() throws Exception {
-        when(useCase.execute(any(CreateTransactionCommand.class)))
+        when(useCase.create(any(CreateTransactionCommand.class)))
                 .thenReturn(new CreateTransactionResult("11111111-1111-1111-1111-111111111111"));
 
         Instant occurredAt = Instant.parse("2025-01-01T10:00:00Z");
@@ -72,7 +72,7 @@ class TransactionControllerWebContractTest extends WebContractTestBase {
                 .andExpect(header().string(TraceIdFilter.TRACE_ID_HEADER, "req-1"))
                 .andExpect(jsonPath("$.id").value("11111111-1111-1111-1111-111111111111"));
 
-        verify(useCase).execute(new CreateTransactionCommand(
+        verify(useCase).create(new CreateTransactionCommand(
                 "22222222-2222-2222-2222-222222222222",
                 null,
                 "EXPENSE",
@@ -108,7 +108,7 @@ class TransactionControllerWebContractTest extends WebContractTestBase {
 
     @Test
     void create_shouldReturn404_whenUseCaseThrowsNotFound() throws Exception {
-        when(useCase.execute(any(CreateTransactionCommand.class)))
+        when(useCase.create(any(CreateTransactionCommand.class)))
                 .thenThrow(new NotFoundException("Wallet not found"));
 
         Instant occurredAt = Instant.parse("2025-01-01T10:00:00Z");
@@ -133,7 +133,7 @@ class TransactionControllerWebContractTest extends WebContractTestBase {
                 .andExpect(jsonPath("$.fieldErrors", hasSize(0)))
                 .andExpect(jsonPath("$.traceId").value("req-404"));
 
-        verify(useCase).execute(new CreateTransactionCommand(
+        verify(useCase).create(new CreateTransactionCommand(
                 "22222222-2222-2222-2222-222222222222",
                 null,
                 "INCOME",
@@ -144,7 +144,7 @@ class TransactionControllerWebContractTest extends WebContractTestBase {
 
     @Test
     void create_shouldReturn400_whenUseCaseThrowsDomainValidation() throws Exception {
-        when(useCase.execute(any(CreateTransactionCommand.class)))
+        when(useCase.create(any(CreateTransactionCommand.class)))
                 .thenThrow(new ValidationException("Transaction amount must be > 0"));
 
         Instant occurredAt = Instant.parse("2025-01-01T10:00:00Z");
@@ -169,7 +169,7 @@ class TransactionControllerWebContractTest extends WebContractTestBase {
                 .andExpect(jsonPath("$.fieldErrors", hasSize(0)))
                 .andExpect(jsonPath("$.traceId").value("req-400"));
 
-        verify(useCase).execute(new CreateTransactionCommand(
+        verify(useCase).create(new CreateTransactionCommand(
                 "22222222-2222-2222-2222-222222222222",
                 null,
                 "EXPENSE",
@@ -180,7 +180,7 @@ class TransactionControllerWebContractTest extends WebContractTestBase {
 
     @Test
     void create_shouldReturn400_whenNoTraceHeaderProvided_andServerGeneratesTraceId() throws Exception {
-        when(useCase.execute(any(CreateTransactionCommand.class)))
+        when(useCase.create(any(CreateTransactionCommand.class)))
                 .thenReturn(new CreateTransactionResult("11111111-1111-1111-1111-111111111111"));
 
         Instant occurredAt = Instant.parse("2025-01-01T10:00:00Z");
@@ -199,9 +199,10 @@ class TransactionControllerWebContractTest extends WebContractTestBase {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(header().string(TraceIdFilter.TRACE_ID_HEADER, not(blankOrNullString())));
+                .andExpect(header().string(TraceIdFilter.TRACE_ID_HEADER, not(blankOrNullString())))
+                .andExpect(jsonPath("$.id").value("11111111-1111-1111-1111-111111111111"));
 
-        verify(useCase).execute(new CreateTransactionCommand(
+        verify(useCase).create(new CreateTransactionCommand(
                 "22222222-2222-2222-2222-222222222222",
                 null,
                 "INCOME",

@@ -2,6 +2,9 @@ package ru.manrovich.cashflow.application.reference.currency.usecase.seed;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.manrovich.cashflow.application.reference.currency.service.CurrencyApplicationService;
+import ru.manrovich.cashflow.application.reference.currency.usecase.command.SeedCurrenciesCommand;
+import ru.manrovich.cashflow.application.reference.currency.usecase.result.SeedCurrenciesResult;
 import ru.manrovich.cashflow.domain.kernel.id.CurrencyId;
 import ru.manrovich.cashflow.domain.reference.currency.port.CurrencyQueryPort;
 import ru.manrovich.cashflow.domain.reference.currency.port.CurrencyRepository;
@@ -20,24 +23,24 @@ import static org.mockito.Mockito.when;
 class SeedCurrenciesServiceTest {
 
     private InMemoryCurrencyStore store;
-    private SeedCurrenciesService service;
+    private CurrencyApplicationService service;
 
     @BeforeEach
     void setUp() {
         store = new InMemoryCurrencyStore();
-        service = new SeedCurrenciesService(store, store);
+        service = new CurrencyApplicationService(store, store);
     }
 
     @Test
     void shouldInsertMissingCurrencies_andThenBeIdempotent() {
-        SeedCurrenciesResult first = service.execute(new SeedCurrenciesCommand(false));
+        SeedCurrenciesResult first = service.seed(new SeedCurrenciesCommand(false));
         int totalSeedCount = first.inserted() + first.skipped();
 
         assertTrue(totalSeedCount > 0, "Seed list must not be empty");
         assertTrue(first.inserted() > 0, "First run should insert something");
         assertEquals(totalSeedCount - first.inserted(), first.skipped());
 
-        SeedCurrenciesResult second = service.execute(new SeedCurrenciesCommand(false));
+        SeedCurrenciesResult second = service.seed(new SeedCurrenciesCommand(false));
 
         assertEquals(0, second.inserted(), "Second run must not insert anything (idempotent)");
         assertEquals(totalSeedCount, second.skipped(), "Second run must skip all seeded currencies");
@@ -46,7 +49,7 @@ class SeedCurrenciesServiceTest {
 
     @Test
     void dryRun_shouldNotPersistAnything() {
-        SeedCurrenciesResult dry = service.execute(new SeedCurrenciesCommand(true));
+        SeedCurrenciesResult dry = service.seed(new SeedCurrenciesCommand(true));
 
         assertTrue(dry.inserted() > 0, "Dry run still computes what would be inserted");
         assertTrue(dry.dryRun());
@@ -59,7 +62,7 @@ class SeedCurrenciesServiceTest {
     void shouldSkipAlreadyExistingCurrency() {
         store.save(TestCurrencies.usd());
 
-        SeedCurrenciesResult result = service.execute(new SeedCurrenciesCommand(false));
+        SeedCurrenciesResult result = service.seed(new SeedCurrenciesCommand(false));
         int totalSeedCount = result.inserted() + result.skipped();
 
         assertTrue(totalSeedCount > 0);
@@ -74,9 +77,9 @@ class SeedCurrenciesServiceTest {
 
         when(query.exists(any(CurrencyId.class))).thenReturn(false);
 
-        SeedCurrenciesService service = new SeedCurrenciesService(repo, query);
+        CurrencyApplicationService service = new CurrencyApplicationService(repo, query);
 
-        service.execute(new SeedCurrenciesCommand(true));
+        service.seed(new SeedCurrenciesCommand(true));
 
         verify(repo, never()).saveAll(any());
     }
@@ -89,9 +92,9 @@ class SeedCurrenciesServiceTest {
         // Пусть всё "уже существует" => toInsert пустой
         when(query.exists(any(CurrencyId.class))).thenReturn(true);
 
-        SeedCurrenciesService service = new SeedCurrenciesService(repo, query);
+        CurrencyApplicationService service = new CurrencyApplicationService(repo, query);
 
-        service.execute(new SeedCurrenciesCommand(false));
+        service.seed(new SeedCurrenciesCommand(false));
 
         verify(repo, never()).saveAll(any());
     }

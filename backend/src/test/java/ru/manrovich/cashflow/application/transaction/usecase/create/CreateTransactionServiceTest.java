@@ -7,6 +7,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.manrovich.cashflow.application.common.security.CurrentUserProvider;
+import ru.manrovich.cashflow.application.transaction.service.TransactionApplicationService;
+import ru.manrovich.cashflow.application.transaction.usecase.command.CreateTransactionCommand;
+import ru.manrovich.cashflow.application.transaction.usecase.result.CreateTransactionResult;
 import ru.manrovich.cashflow.domain.kernel.exception.NotFoundException;
 import ru.manrovich.cashflow.domain.kernel.exception.ValidationException;
 import ru.manrovich.cashflow.domain.kernel.id.CategoryId;
@@ -44,7 +47,7 @@ class CreateTransactionServiceTest {
     CurrentUserProvider currentUserProvider;
 
     @InjectMocks
-    CreateTransactionService service;
+    TransactionApplicationService service;
 
     @Test
     void execute_shouldCreateTransaction_whenOk() {
@@ -71,7 +74,7 @@ class CreateTransactionServiceTest {
                 Instant.parse("2025-01-01T10:00:00Z")
         );
 
-        CreateTransactionResult result = service.execute(cmd);
+        CreateTransactionResult result = service.create(cmd);
 
         assertNotNull(result.id());
 
@@ -104,7 +107,7 @@ class CreateTransactionServiceTest {
                 Instant.parse("2025-01-01T10:00:00Z")
         );
 
-        assertThrows(NotFoundException.class, () -> service.execute(cmd));
+        assertThrows(NotFoundException.class, () -> service.create(cmd));
         verify(transactionRepository, never()).save(any());
     }
 
@@ -129,7 +132,7 @@ class CreateTransactionServiceTest {
                 Instant.parse("2025-01-01T10:00:00Z")
         );
 
-        assertThrows(NotFoundException.class, () -> service.execute(cmd));
+        assertThrows(NotFoundException.class, () -> service.create(cmd));
         verify(transactionRepository, never()).save(any());
     }
 
@@ -150,7 +153,7 @@ class CreateTransactionServiceTest {
                 Instant.parse("2025-01-01T10:00:00Z")
         );
 
-        assertThrows(ValidationException.class, () -> service.execute(cmd));
+        assertThrows(ValidationException.class, () -> service.create(cmd));
         verify(transactionRepository, never()).save(any());
     }
 
@@ -171,7 +174,7 @@ class CreateTransactionServiceTest {
                 Instant.parse("2025-01-01T10:00:00Z")
         );
 
-        assertThrows(ValidationException.class, () -> service.execute(cmd));
+        assertThrows(ValidationException.class, () -> service.create(cmd));
         verify(transactionRepository, never()).save(any());
     }
 
@@ -192,7 +195,7 @@ class CreateTransactionServiceTest {
                 Instant.parse("2025-01-01T10:00:00Z")
         );
 
-        assertThrows(ValidationException.class, () -> service.execute(cmd));
+        assertThrows(ValidationException.class, () -> service.create(cmd));
         verify(transactionRepository, never()).save(any());
     }
 }

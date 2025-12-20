@@ -8,11 +8,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.manrovich.cashflow.application.wallet.usecase.create.CreateWalletCommand;
-import ru.manrovich.cashflow.application.wallet.usecase.create.CreateWalletResult;
-import ru.manrovich.cashflow.application.wallet.usecase.create.CreateWalletUseCase;
-import ru.manrovich.cashflow.application.wallet.web.create.CreateWalletHandler;
-import ru.manrovich.cashflow.application.wallet.web.create.CreateWalletRequest;
+import ru.manrovich.cashflow.application.wallet.usecase.WalletUseCase;
+import ru.manrovich.cashflow.application.wallet.usecase.command.CreateWalletCommand;
+import ru.manrovich.cashflow.application.wallet.usecase.result.CreateWalletResult;
+import ru.manrovich.cashflow.application.wallet.web.dto.CreateWalletRequest;
+import ru.manrovich.cashflow.application.wallet.web.mapper.WalletWebMapper;
 import ru.manrovich.cashflow.domain.kernel.exception.NotFoundException;
 import ru.manrovich.cashflow.testing.web.WebContractTestBase;
 
@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = WalletController.class)
-@Import(CreateWalletHandler.class)
+@Import(WalletWebMapper.class)
 class WalletControllerWebContractTest extends WebContractTestBase {
 
     @Autowired
@@ -37,11 +37,11 @@ class WalletControllerWebContractTest extends WebContractTestBase {
     ObjectMapper objectMapper;
 
     @MockitoBean
-    CreateWalletUseCase useCase;
+    WalletUseCase useCase;
 
     @Test
     void create_shouldReturn201_andResponseBody_whenOk() throws Exception {
-        when(useCase.execute(any(CreateWalletCommand.class)))
+        when(useCase.create(any(CreateWalletCommand.class)))
                 .thenReturn(new CreateWalletResult(
                         "11111111-1111-1111-1111-111111111111",
                         "Main",
@@ -59,12 +59,11 @@ class WalletControllerWebContractTest extends WebContractTestBase {
                 .andExpect(jsonPath("$.name").value("Main"))
                 .andExpect(jsonPath("$.currencyCode").value("RUB"));
 
-        verify(useCase).execute(new CreateWalletCommand("Main", "RUB"));
+        verify(useCase).create(new CreateWalletCommand("Main", "RUB"));
     }
 
     @Test
     void create_shouldReturn400_whenRequestInvalid_andNotCallUseCase() throws Exception {
-        // currencyCode нарушает ^[A-Z]{3}$
         CreateWalletRequest request = new CreateWalletRequest("Main", "RU");
 
         mvc.perform(post("/api/wallets")
@@ -80,8 +79,8 @@ class WalletControllerWebContractTest extends WebContractTestBase {
 
     @Test
     void create_shouldReturn404_whenUseCaseThrowsNotFound() throws Exception {
-        when(useCase.execute(any(CreateWalletCommand.class)))
-                .thenThrow(new NotFoundException("Currency not found: RUB"));
+        when(useCase.create(any(CreateWalletCommand.class)))
+                .thenThrow(new NotFoundException("Currency not found"));
 
         CreateWalletRequest request = new CreateWalletRequest("Main", "RUB");
 
@@ -93,6 +92,6 @@ class WalletControllerWebContractTest extends WebContractTestBase {
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.fieldErrors", hasSize(0)));
 
-        verify(useCase).execute(new CreateWalletCommand("Main", "RUB"));
+        verify(useCase).create(new CreateWalletCommand("Main", "RUB"));
     }
 }
