@@ -1,5 +1,6 @@
 package ru.manrovich.cashflow.application.wallet.web;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,7 +21,7 @@ public class WalletController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CreateWalletResponse create(@RequestBody CreateWalletRequest request) {
+    public CreateWalletResponse create(@Valid @RequestBody CreateWalletRequest request) {
         return createWalletHandler.handle(request);
     }
 }

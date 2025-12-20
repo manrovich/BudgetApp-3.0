@@ -50,7 +50,7 @@ public class CreateTransactionService implements CreateTransactionUseCase {
             }
         }
 
-        BigDecimal amount = new BigDecimal(command.amount());
+        BigDecimal amount = command.amount();
         Instant occurredAt = command.occurredAt();
 
         Money money = new Money(amount, walletCurrency);

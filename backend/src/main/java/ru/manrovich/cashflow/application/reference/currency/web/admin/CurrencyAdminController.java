@@ -1,5 +1,6 @@
 package ru.manrovich.cashflow.application.reference.currency.web.admin;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,7 +21,7 @@ public class CurrencyAdminController {
 
     @PostMapping("seed")
     public SeedCurrenciesResponse seed(
-            @RequestBody(required = false) SeedCurrenciesRequest request,
+            @Valid @RequestBody(required = false) SeedCurrenciesRequest request,
             Locale locale
     ) {
         return seedCurrenciesHandler.handle(request, locale);

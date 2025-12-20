@@ -1,4 +1,11 @@
 package ru.manrovich.cashflow.application.reference.category.web.create;
 
-public record CreateCategoryRequest(String name) {
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+public record CreateCategoryRequest(
+        @NotBlank
+        @Size(max = 64)
+        String name
+) {
 }
