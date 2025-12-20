@@ -4,6 +4,7 @@ import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
+import org.springframework.data.repository.Repository;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
@@ -49,11 +50,12 @@ public class NamingConventionRulesTest {
                     .because("Мапперы домен <-> JPA должны оканчиваться на *Mapper.");
 
     @ArchTest
-    static final ArchRule jpa_repositories_must_end_with_repository =
+    static final ArchRule spring_data_repositories_must_end_with_repository =
             classes()
-                    .that().resideInAnyPackage(
+                    .that().areAssignableTo(Repository.class)
+                    .and().resideInAnyPackage(
                             "..infrastructure.persistence.jpa.repository..",
-                            "..infrastructure.persistence.jpa.springdata.." // если у тебя пакет назван springdata
+                            "..infrastructure.persistence.jpa.springdata.."
                     )
                     .should().haveSimpleNameEndingWith("Repository")
                     .because("Spring Data репозитории должны оканчиваться на *Repository.");
