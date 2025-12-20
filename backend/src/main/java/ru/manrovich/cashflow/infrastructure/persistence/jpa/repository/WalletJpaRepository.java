@@ -1,10 +1,13 @@
 package ru.manrovich.cashflow.infrastructure.persistence.jpa.repository;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.manrovich.cashflow.infrastructure.persistence.jpa.entity.WalletEntity;
+import ru.manrovich.cashflow.infrastructure.persistence.jpa.repository.projection.WalletListRow;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,4 +22,14 @@ public interface WalletJpaRepository extends JpaRepository<WalletEntity, UUID> {
     @Query("select w.currencyCode from WalletEntity w where w.id = :id and w.ownerId = :ownerId")
     Optional<String> findCurrencyCodeByIdAndOwnerId(@Param("ownerId") UUID ownerId,
                                                     @Param("id") UUID id);
+
+    @Query("""
+           select
+             w.id as id,
+             w.name as name,
+             w.currencyCode as currencyCode
+           from WalletEntity w
+           where w.ownerId = :ownerId
+           """)
+    List<WalletListRow> findListRows(UUID ownerId, Pageable pageable);
 }
