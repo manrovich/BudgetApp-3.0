@@ -19,9 +19,9 @@ public interface TransactionJpaRepository extends JpaRepository<TransactionEntit
     boolean existsByOwnerIdAndWalletId(UUID ownerId, UUID walletId);
 
     @Query("""
-            select coalesce(sum(t.amount), 0)
-            from TransactionEntity t
-            where t.ownerId = :ownerId and t.walletId = :walletId
-           """)
+        select coalesce(sum(case when t.type = 'EXPENSE' then -t.amount else t.amount end), 0)
+        from TransactionEntity t
+        where t.ownerId = :ownerId and t.walletId = :walletId
+    """)
     BigDecimal sumAmountsByOwnerIdAndWalletId(UUID ownerId, UUID walletId);
 }

@@ -8,6 +8,7 @@ import ru.manrovich.cashflow.domain.kernel.id.UserId;
 import ru.manrovich.cashflow.domain.kernel.id.WalletId;
 import ru.manrovich.cashflow.domain.kernel.money.Money;
 import ru.manrovich.cashflow.domain.transaction.model.Transaction;
+import ru.manrovich.cashflow.domain.transaction.model.TransactionType;
 import ru.manrovich.cashflow.infrastructure.persistence.jpa.entity.TransactionEntity;
 
 import java.util.UUID;
@@ -23,6 +24,7 @@ public class TransactionEntityMapper {
                 domain.ownerId().value(),
                 domain.walletId().value(),
                 categoryId,
+                domain.type().name(),
                 domain.money().amount(),
                 domain.money().currencyId().value(),
                 domain.occurredAt()
@@ -42,6 +44,7 @@ public class TransactionEntityMapper {
                 new UserId(entity.getOwnerId()),
                 new WalletId(entity.getWalletId()),
                 categoryId,
+                TransactionType.valueOf(entity.getType()),
                 money,
                 entity.getOccurredAt()
         );

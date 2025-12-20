@@ -14,6 +14,7 @@ import ru.manrovich.cashflow.domain.kernel.id.CurrencyId;
 import ru.manrovich.cashflow.domain.kernel.id.WalletId;
 import ru.manrovich.cashflow.domain.reference.category.port.CategoryQueryPort;
 import ru.manrovich.cashflow.domain.transaction.model.Transaction;
+import ru.manrovich.cashflow.domain.transaction.model.TransactionType;
 import ru.manrovich.cashflow.domain.transaction.port.TransactionRepository;
 import ru.manrovich.cashflow.domain.wallet.port.WalletQueryPort;
 
@@ -65,6 +66,7 @@ class CreateTransactionServiceTest {
         CreateTransactionCommand cmd = new CreateTransactionCommand(
                 walletUuid.toString(),
                 categoryUuid.toString(),
+                "EXPENSE",
                 new BigDecimal("100.00"),
                 Instant.parse("2025-01-01T10:00:00Z")
         );
@@ -80,8 +82,9 @@ class CreateTransactionServiceTest {
         assertEquals(USER_1.value(), saved.ownerId().value());
         assertEquals(walletUuid, saved.walletId().value());
         assertEquals(categoryUuid, saved.categoryId().value());
+        assertEquals(TransactionType.EXPENSE, saved.type());
         assertEquals("RUB", saved.money().currencyId().value());
-        assertEquals("100.00", saved.money().amount().toPlainString());
+        assertEquals(0, saved.money().amount().compareTo(new BigDecimal("100.00")));
         assertEquals("2025-01-01T10:00:00Z", saved.occurredAt().toString());
     }
 
@@ -96,6 +99,7 @@ class CreateTransactionServiceTest {
         CreateTransactionCommand cmd = new CreateTransactionCommand(
                 walletUuid.toString(),
                 null,
+                "INCOME",
                 new BigDecimal("10"),
                 Instant.parse("2025-01-01T10:00:00Z")
         );
@@ -120,6 +124,7 @@ class CreateTransactionServiceTest {
         CreateTransactionCommand cmd = new CreateTransactionCommand(
                 walletUuid.toString(),
                 categoryUuid.toString(),
+                "INCOME",
                 new BigDecimal("10"),
                 Instant.parse("2025-01-01T10:00:00Z")
         );
@@ -140,7 +145,50 @@ class CreateTransactionServiceTest {
         CreateTransactionCommand cmd = new CreateTransactionCommand(
                 walletUuid.toString(),
                 null,
-                new BigDecimal("0"),
+                "EXPENSE",
+                BigDecimal.ZERO,
+                Instant.parse("2025-01-01T10:00:00Z")
+        );
+
+        assertThrows(ValidationException.class, () -> service.execute(cmd));
+        verify(transactionRepository, never()).save(any());
+    }
+
+    @Test
+    void execute_shouldThrowValidation_whenTypeUnknown() {
+        when(currentUserProvider.currentUserId()).thenReturn(USER_1);
+
+        UUID walletUuid = UUID.randomUUID();
+        WalletId walletId = new WalletId(walletUuid);
+        when(walletQueryPort.exists(USER_1, walletId)).thenReturn(true);
+        when(walletQueryPort.getCurrencyId(USER_1, walletId)).thenReturn(new CurrencyId("RUB"));
+
+        CreateTransactionCommand cmd = new CreateTransactionCommand(
+                walletUuid.toString(),
+                null,
+                "SOMETHING",
+                new BigDecimal("10"),
+                Instant.parse("2025-01-01T10:00:00Z")
+        );
+
+        assertThrows(ValidationException.class, () -> service.execute(cmd));
+        verify(transactionRepository, never()).save(any());
+    }
+
+    @Test
+    void execute_shouldThrowValidation_whenTypeNull() {
+        when(currentUserProvider.currentUserId()).thenReturn(USER_1);
+
+        UUID walletUuid = UUID.randomUUID();
+        WalletId walletId = new WalletId(walletUuid);
+        when(walletQueryPort.exists(USER_1, walletId)).thenReturn(true);
+        when(walletQueryPort.getCurrencyId(USER_1, walletId)).thenReturn(new CurrencyId("RUB"));
+
+        CreateTransactionCommand cmd = new CreateTransactionCommand(
+                walletUuid.toString(),
+                null,
+                null,
+                new BigDecimal("10"),
                 Instant.parse("2025-01-01T10:00:00Z")
         );
 

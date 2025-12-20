@@ -13,6 +13,7 @@ import ru.manrovich.cashflow.domain.kernel.id.WalletId;
 import ru.manrovich.cashflow.domain.kernel.money.Money;
 import ru.manrovich.cashflow.domain.reference.category.port.CategoryQueryPort;
 import ru.manrovich.cashflow.domain.transaction.model.Transaction;
+import ru.manrovich.cashflow.domain.transaction.model.TransactionType;
 import ru.manrovich.cashflow.domain.transaction.port.TransactionRepository;
 import ru.manrovich.cashflow.domain.wallet.port.WalletQueryPort;
 
@@ -42,6 +43,8 @@ public class CreateTransactionService implements CreateTransactionUseCase {
 
         CurrencyId walletCurrency = walletQueryPort.getCurrencyId(ownerId, walletId);
 
+        TransactionType type = TransactionType.parse(command.type());
+
         CategoryId categoryId = null;
         if (command.categoryId() != null) {
             categoryId = new CategoryId(UUID.fromString(command.categoryId()));
@@ -60,6 +63,7 @@ public class CreateTransactionService implements CreateTransactionUseCase {
                 ownerId,
                 walletId,
                 categoryId,
+                type,
                 money,
                 occurredAt
         );

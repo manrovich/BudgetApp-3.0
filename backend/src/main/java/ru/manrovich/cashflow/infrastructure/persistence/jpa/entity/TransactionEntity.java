@@ -32,6 +32,9 @@ public class TransactionEntity {
     @Column(name = "category_id")
     private UUID categoryId;
 
+    @Column(name = "type", nullable = false, length = 16)
+    private String type;
+
     @Column(name = "amount", nullable = false, precision = 17, scale = 4)
     private BigDecimal amount;
 
