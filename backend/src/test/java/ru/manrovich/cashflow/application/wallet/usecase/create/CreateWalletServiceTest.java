@@ -5,6 +5,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.manrovich.cashflow.application.common.security.CurrentUserProvider;
+import ru.manrovich.cashflow.application.wallet.service.WalletApplicationService;
+import ru.manrovich.cashflow.application.wallet.usecase.command.CreateWalletCommand;
+import ru.manrovich.cashflow.application.wallet.usecase.result.CreateWalletResult;
 import ru.manrovich.cashflow.domain.kernel.exception.NotFoundException;
 import ru.manrovich.cashflow.domain.kernel.id.CurrencyId;
 import ru.manrovich.cashflow.domain.reference.currency.port.CurrencyQueryPort;
@@ -36,9 +39,9 @@ class CreateWalletServiceTest {
         ArgumentCaptor<Wallet> captor = ArgumentCaptor.forClass(Wallet.class);
         when(walletRepository.save(captor.capture())).thenAnswer(inv -> inv.getArgument(0));
 
-        CreateWalletService service = new CreateWalletService(walletRepository, currencyQueryPort, currentUserProvider);
+        WalletApplicationService service = new WalletApplicationService(walletRepository, currencyQueryPort, currentUserProvider);
 
-        CreateWalletResult result = service.execute(new CreateWalletCommand("Main", "RUB"));
+        CreateWalletResult result = service.create(new CreateWalletCommand("Main", "RUB"));
 
         Wallet saved = captor.getValue();
         assertEquals(USER_1.value(), saved.ownerId().value());
@@ -58,9 +61,9 @@ class CreateWalletServiceTest {
         when(currentUserProvider.currentUserId()).thenReturn(USER_1);
         when(currencyQueryPort.exists(new CurrencyId("RUB"))).thenReturn(false);
 
-        CreateWalletService service = new CreateWalletService(walletRepository, currencyQueryPort, currentUserProvider);
+        WalletApplicationService service = new WalletApplicationService(walletRepository, currencyQueryPort, currentUserProvider);
 
-        assertThrows(NotFoundException.class, () -> service.execute(new CreateWalletCommand("Main", "RUB")));
+        assertThrows(NotFoundException.class, () -> service.create(new CreateWalletCommand("Main", "RUB")));
         verify(walletRepository, never()).save(any());
     }
 }

@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.manrovich.cashflow.application.reference.category.web.create.CreateCategoryRequest;
-import ru.manrovich.cashflow.application.transaction.web.create.CreateTransactionRequest;
+import ru.manrovich.cashflow.application.reference.category.web.dto.CreateCategoryRequest;
+import ru.manrovich.cashflow.application.transaction.web.dto.CreateTransactionRequest;
 import ru.manrovich.cashflow.domain.kernel.exception.NotFoundException;
 import ru.manrovich.cashflow.testing.web.WebContractTestBase;
 
@@ -74,10 +74,10 @@ class WebInfrastructureContractTest extends WebContractTestBase {
     void malformedBody_shouldReturn400_andStableMessage() throws Exception {
         String body = """
                 {
-                  "walletId": "22222222-2222-2222-2222-222222222222",
-                  "categoryId": null,
-                  "amount": 100.00,
-                  "occurredAt": "not-an-instant"
+                  \"walletId\": \"22222222-2222-2222-2222-222222222222\",
+                  \"categoryId\": null,
+                  \"amount\": 100.00,
+                  \"occurredAt\": \"not-an-instant\"
                 }
                 """;
 

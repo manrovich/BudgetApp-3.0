@@ -8,11 +8,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.manrovich.cashflow.application.reference.category.usecase.create.CreateCategoryCommand;
-import ru.manrovich.cashflow.application.reference.category.usecase.create.CreateCategoryResult;
-import ru.manrovich.cashflow.application.reference.category.usecase.create.CreateCategoryUseCase;
-import ru.manrovich.cashflow.application.reference.category.web.create.CreateCategoryHandler;
-import ru.manrovich.cashflow.application.reference.category.web.create.CreateCategoryRequest;
+import ru.manrovich.cashflow.application.reference.category.usecase.CategoryUseCase;
+import ru.manrovich.cashflow.application.reference.category.usecase.command.CreateCategoryCommand;
+import ru.manrovich.cashflow.application.reference.category.usecase.result.CreateCategoryResult;
+import ru.manrovich.cashflow.application.reference.category.web.dto.CreateCategoryRequest;
+import ru.manrovich.cashflow.application.reference.category.web.mapper.CategoryWebMapper;
 import ru.manrovich.cashflow.domain.kernel.exception.ConflictException;
 import ru.manrovich.cashflow.testing.web.WebContractTestBase;
 
@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = CategoryController.class)
-@Import(CreateCategoryHandler.class)
+@Import(CategoryWebMapper.class)
 class CategoryControllerWebContractTest extends WebContractTestBase {
 
     @Autowired
@@ -37,11 +37,11 @@ class CategoryControllerWebContractTest extends WebContractTestBase {
     ObjectMapper objectMapper;
 
     @MockitoBean
-    CreateCategoryUseCase useCase;
+    CategoryUseCase useCase;
 
     @Test
     void create_shouldReturn201_andResponseBody_whenOk() throws Exception {
-        when(useCase.execute(any(CreateCategoryCommand.class)))
+        when(useCase.create(any(CreateCategoryCommand.class)))
                 .thenReturn(new CreateCategoryResult(
                         "11111111-1111-1111-1111-111111111111",
                         "Food"
@@ -57,7 +57,7 @@ class CategoryControllerWebContractTest extends WebContractTestBase {
                 .andExpect(jsonPath("$.id").value("11111111-1111-1111-1111-111111111111"))
                 .andExpect(jsonPath("$.name").value("Food"));
 
-        verify(useCase).execute(new CreateCategoryCommand("Food"));
+        verify(useCase).create(new CreateCategoryCommand("Food"));
     }
 
     @Test
@@ -79,7 +79,7 @@ class CategoryControllerWebContractTest extends WebContractTestBase {
 
     @Test
     void create_shouldReturn409_whenUseCaseThrowsConflict() throws Exception {
-        when(useCase.execute(any(CreateCategoryCommand.class)))
+        when(useCase.create(any(CreateCategoryCommand.class)))
                 .thenThrow(new ConflictException("Category with name already exists"));
 
         CreateCategoryRequest request = new CreateCategoryRequest("Food");
@@ -92,6 +92,6 @@ class CategoryControllerWebContractTest extends WebContractTestBase {
                 .andExpect(jsonPath("$.status").value(409))
                 .andExpect(jsonPath("$.fieldErrors", hasSize(0)));
 
-        verify(useCase).execute(new CreateCategoryCommand("Food"));
+        verify(useCase).create(new CreateCategoryCommand("Food"));
     }
 }

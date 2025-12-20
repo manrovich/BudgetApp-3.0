@@ -6,9 +6,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.manrovich.cashflow.application.reference.currency.web.admin.seed.SeedCurrenciesHandler;
-import ru.manrovich.cashflow.application.reference.currency.web.admin.seed.SeedCurrenciesRequest;
-import ru.manrovich.cashflow.application.reference.currency.web.admin.seed.SeedCurrenciesResponse;
+import ru.manrovich.cashflow.application.reference.currency.usecase.CurrencyUseCase;
+import ru.manrovich.cashflow.application.reference.currency.usecase.result.SeedCurrenciesResult;
+import ru.manrovich.cashflow.application.reference.currency.web.admin.dto.SeedCurrenciesRequest;
+import ru.manrovich.cashflow.application.reference.currency.web.admin.dto.SeedCurrenciesResponse;
+import ru.manrovich.cashflow.application.reference.currency.web.admin.mapper.CurrencyAdminWebMapper;
 
 import java.util.Locale;
 
@@ -17,13 +19,15 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class CurrencyAdminController {
 
-    private final SeedCurrenciesHandler seedCurrenciesHandler;
+    private final CurrencyUseCase currencyUseCase;
+    private final CurrencyAdminWebMapper webMapper;
 
     @PostMapping("seed")
     public SeedCurrenciesResponse seed(
             @Valid @RequestBody(required = false) SeedCurrenciesRequest request,
             Locale locale
     ) {
-        return seedCurrenciesHandler.handle(request, locale);
+        SeedCurrenciesResult result = currencyUseCase.seed(webMapper.toSeedCommand(request));
+        return webMapper.toSeedResponse(result, locale);
     }
 }

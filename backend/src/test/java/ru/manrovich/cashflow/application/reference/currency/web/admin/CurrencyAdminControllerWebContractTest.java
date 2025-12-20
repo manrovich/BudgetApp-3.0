@@ -9,11 +9,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.manrovich.cashflow.application.common.web.TraceIdFilter;
-import ru.manrovich.cashflow.application.reference.currency.usecase.seed.SeedCurrenciesCommand;
-import ru.manrovich.cashflow.application.reference.currency.usecase.seed.SeedCurrenciesResult;
-import ru.manrovich.cashflow.application.reference.currency.usecase.seed.SeedCurrenciesUseCase;
-import ru.manrovich.cashflow.application.reference.currency.web.admin.seed.SeedCurrenciesHandler;
-import ru.manrovich.cashflow.application.reference.currency.web.admin.seed.SeedCurrenciesRequest;
+import ru.manrovich.cashflow.application.reference.currency.usecase.CurrencyUseCase;
+import ru.manrovich.cashflow.application.reference.currency.usecase.command.SeedCurrenciesCommand;
+import ru.manrovich.cashflow.application.reference.currency.usecase.result.SeedCurrenciesResult;
+import ru.manrovich.cashflow.application.reference.currency.web.admin.dto.SeedCurrenciesRequest;
+import ru.manrovich.cashflow.application.reference.currency.web.admin.mapper.CurrencyAdminWebMapper;
 import ru.manrovich.cashflow.testing.web.WebContractTestBase;
 
 import java.util.List;
@@ -31,18 +31,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = CurrencyAdminController.class)
-@Import({SeedCurrenciesHandler.class})
+@Import(CurrencyAdminWebMapper.class)
 class CurrencyAdminControllerWebContractTest extends WebContractTestBase {
 
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper objectMapper;
 
-    @MockitoBean SeedCurrenciesUseCase useCase;
+    @MockitoBean CurrencyUseCase useCase;
     @MockitoBean org.springframework.context.MessageSource messageSource;
 
     @Test
     void seed_shouldReturn200_whenBodyAbsent_useDefaultRequest_andSetTraceHeader() throws Exception {
-        when(useCase.execute(any(SeedCurrenciesCommand.class)))
+        when(useCase.seed(any(SeedCurrenciesCommand.class)))
                 .thenReturn(new SeedCurrenciesResult(1, 2, false, List.of("USD")));
 
         when(messageSource.getMessage(eq("currency.seed.summary"), any(), any()))
@@ -60,12 +60,12 @@ class CurrencyAdminControllerWebContractTest extends WebContractTestBase {
                 .andExpect(jsonPath("$.insertedCodes[0]").value("USD"))
                 .andExpect(jsonPath("$.summary").value("summary"));
 
-        verify(useCase).execute(new SeedCurrenciesCommand(false));
+        verify(useCase).seed(new SeedCurrenciesCommand(false));
     }
 
     @Test
     void seed_shouldReturn200_whenBodyProvided_andPassDryRunTrue() throws Exception {
-        when(useCase.execute(any(SeedCurrenciesCommand.class)))
+        when(useCase.seed(any(SeedCurrenciesCommand.class)))
                 .thenReturn(new SeedCurrenciesResult(0, 3, true, List.of()));
 
         when(messageSource.getMessage(eq("currency.seed.summary"), any(), any()))
@@ -82,6 +82,6 @@ class CurrencyAdminControllerWebContractTest extends WebContractTestBase {
                 .andExpect(header().string(TraceIdFilter.TRACE_ID_HEADER, not(blankOrNullString())))
                 .andExpect(jsonPath("$.dryRun").value(true));
 
-        verify(useCase).execute(new SeedCurrenciesCommand(true));
+        verify(useCase).seed(new SeedCurrenciesCommand(true));
     }
 }

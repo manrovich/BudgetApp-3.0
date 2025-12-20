@@ -4,6 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import ru.manrovich.cashflow.application.common.security.CurrentUserProvider;
+import ru.manrovich.cashflow.application.reference.category.service.CategoryApplicationService;
+import ru.manrovich.cashflow.application.reference.category.usecase.command.CreateCategoryCommand;
+import ru.manrovich.cashflow.application.reference.category.usecase.result.CreateCategoryResult;
 import ru.manrovich.cashflow.domain.kernel.exception.ConflictException;
 import ru.manrovich.cashflow.domain.kernel.exception.ValidationException;
 import ru.manrovich.cashflow.domain.reference.category.model.Category;
@@ -30,7 +33,7 @@ class CreateCategoryServiceTest {
     private CategoryRepository repository;
     private CategoryQueryPort queryPort;
 
-    private CreateCategoryService service;
+    private CategoryApplicationService service;
 
     @BeforeEach
     void setUp() {
@@ -38,7 +41,7 @@ class CreateCategoryServiceTest {
         queryPort = mock(CategoryQueryPort.class);
         CurrentUserProvider currentUserProvider = mock(CurrentUserProvider.class);
 
-        service = new CreateCategoryService(repository, queryPort, currentUserProvider);
+        service = new CategoryApplicationService(repository, queryPort, currentUserProvider);
 
         when(currentUserProvider.currentUserId()).thenReturn(USER_1);
     }
@@ -49,7 +52,7 @@ class CreateCategoryServiceTest {
 
         when(repository.save(any(Category.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        CreateCategoryResult result = service.execute(new CreateCategoryCommand("  Food  "));
+        CreateCategoryResult result = service.create(new CreateCategoryCommand("  Food  "));
 
         assertEquals("Food", result.name());
         assertNotNull(result.categoryId());
@@ -72,7 +75,7 @@ class CreateCategoryServiceTest {
         when(queryPort.existsByNameIgnoreCase(eq(USER_1), any(CategoryName.class))).thenReturn(true);
 
         assertThrows(ConflictException.class, () ->
-                service.execute(new CreateCategoryCommand("Food"))
+                service.create(new CreateCategoryCommand("Food"))
         );
 
         verify(repository, never()).save(any());
@@ -81,7 +84,7 @@ class CreateCategoryServiceTest {
     @Test
     void shouldThrowValidation_whenNameIsBlank() {
         assertThrows(ValidationException.class, () ->
-                service.execute(new CreateCategoryCommand("   "))
+                service.create(new CreateCategoryCommand("   "))
         );
 
         verifyNoInteractions(queryPort);
