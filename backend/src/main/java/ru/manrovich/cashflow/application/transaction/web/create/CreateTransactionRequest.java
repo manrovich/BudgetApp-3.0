@@ -1,7 +1,9 @@
 package ru.manrovich.cashflow.application.transaction.web.create;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.UUID;
 
 import java.math.BigDecimal;
@@ -15,6 +17,11 @@ public record CreateTransactionRequest(
         @Nullable
         @UUID
         String categoryId,
+
+        @Schema(example = "INCOME", description = "INCOME or EXPENSE")
+        @NotNull
+        @Pattern(regexp = "INCOME|EXPENSE")
+        String type,
 
         @NotNull
         BigDecimal amount,

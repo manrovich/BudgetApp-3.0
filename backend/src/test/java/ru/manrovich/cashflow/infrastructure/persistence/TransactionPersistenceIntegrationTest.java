@@ -9,6 +9,7 @@ import ru.manrovich.cashflow.domain.kernel.id.TransactionId;
 import ru.manrovich.cashflow.domain.kernel.id.WalletId;
 import ru.manrovich.cashflow.domain.kernel.money.Money;
 import ru.manrovich.cashflow.domain.transaction.model.Transaction;
+import ru.manrovich.cashflow.domain.transaction.model.TransactionType;
 import ru.manrovich.cashflow.infrastructure.persistence.jpa.adapter.TransactionQueryPortAdapter;
 import ru.manrovich.cashflow.infrastructure.persistence.jpa.adapter.TransactionRepositoryAdapter;
 import ru.manrovich.cashflow.infrastructure.persistence.jpa.entity.TransactionEntity;
@@ -60,6 +61,7 @@ class TransactionPersistenceIntegrationTest extends AbstractPostgresIntegrationT
                 USER_1,
                 new WalletId(UUID.randomUUID()),
                 null,
+                TransactionType.INCOME,
                 new Money(new BigDecimal("10.00"), new CurrencyId("RUB")),
                 Instant.parse("2025-01-01T10:00:00Z")
         );
@@ -75,8 +77,9 @@ class TransactionPersistenceIntegrationTest extends AbstractPostgresIntegrationT
         assertEquals(id.value(), loaded.id().value());
         assertEquals(USER_1.value(), loaded.ownerId().value());
         assertEquals(tx.walletId().value(), loaded.walletId().value());
+        assertEquals(TransactionType.INCOME, loaded.type());
         assertEquals("RUB", loaded.money().currencyId().value());
-        assertEquals("10.00", loaded.money().amount().toPlainString());
+        assertEquals(0, loaded.money().amount().compareTo(new BigDecimal("10.00")));
         assertEquals("2025-01-01T10:00:00Z", loaded.occurredAt().toString());
     }
 
@@ -89,6 +92,7 @@ class TransactionPersistenceIntegrationTest extends AbstractPostgresIntegrationT
                 USER_1,
                 walletId,
                 null,
+                TransactionType.INCOME,
                 new Money(new BigDecimal("1"), new CurrencyId("RUB")),
                 Instant.parse("2025-01-01T10:00:00Z")
         );
@@ -101,6 +105,40 @@ class TransactionPersistenceIntegrationTest extends AbstractPostgresIntegrationT
     }
 
     @Test
+    void sumAmountsByWalletId_shouldReturnSignedSum_basedOnType() {
+        WalletId walletId = new WalletId(UUID.randomUUID());
+
+        transactionRepositoryAdapter.save(new Transaction(
+                new TransactionId(UUID.randomUUID()),
+                USER_1,
+                walletId,
+                null,
+                TransactionType.INCOME,
+                new Money(new BigDecimal("100.00"), new CurrencyId("RUB")),
+                Instant.parse("2025-01-01T10:00:00Z")
+        ));
+
+        transactionRepositoryAdapter.save(new Transaction(
+                new TransactionId(UUID.randomUUID()),
+                USER_1,
+                walletId,
+                null,
+                TransactionType.EXPENSE,
+                new Money(new BigDecimal("30.00"), new CurrencyId("RUB")),
+                Instant.parse("2025-01-02T10:00:00Z")
+        ));
+
+        transactionJpaRepository.flush();
+
+        BigDecimal sum = transactionQueryPortAdapter.sumAmountsByWalletId(USER_1, walletId);
+        assertEquals(0, sum.compareTo(new BigDecimal("70.00")));
+
+        // другой пользователь не должен видеть чужие суммы
+        BigDecimal sum2 = transactionQueryPortAdapter.sumAmountsByWalletId(USER_2, walletId);
+        assertEquals(0, sum2.compareTo(BigDecimal.ZERO));
+    }
+
+    @Test
     void deleteById_shouldDeleteOnlyForOwner() {
         TransactionId id = new TransactionId(UUID.randomUUID());
 
@@ -109,6 +147,7 @@ class TransactionPersistenceIntegrationTest extends AbstractPostgresIntegrationT
                 USER_1,
                 new WalletId(UUID.randomUUID()),
                 null,
+                TransactionType.INCOME,
                 new Money(new BigDecimal("5"), new CurrencyId("RUB")),
                 Instant.parse("2025-01-01T10:00:00Z")
         ));
@@ -132,6 +171,7 @@ class TransactionPersistenceIntegrationTest extends AbstractPostgresIntegrationT
                 USER_1.value(),
                 null,
                 null,
+                TransactionType.INCOME.name(),
                 new BigDecimal("10"),
                 "RUB",
                 Instant.parse("2025-01-01T10:00:00Z")
@@ -150,6 +190,7 @@ class TransactionPersistenceIntegrationTest extends AbstractPostgresIntegrationT
                 USER_1.value(),
                 UUID.randomUUID(),
                 null,
+                TransactionType.INCOME.name(),
                 new BigDecimal("10"),
                 null,
                 Instant.parse("2025-01-01T10:00:00Z")
@@ -170,6 +211,7 @@ class TransactionPersistenceIntegrationTest extends AbstractPostgresIntegrationT
                 USER_1.value(),
                 UUID.randomUUID(),
                 null,
+                TransactionType.INCOME.name(),
                 new BigDecimal("10"),
                 tooLong,
                 Instant.parse("2025-01-01T10:00:00Z")

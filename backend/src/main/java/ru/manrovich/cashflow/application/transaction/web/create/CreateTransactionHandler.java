@@ -16,6 +16,7 @@ public class CreateTransactionHandler {
         CreateTransactionCommand command = new CreateTransactionCommand(
                 request.walletId(),
                 request.categoryId(),
+                request.type(),
                 request.amount(),
                 request.occurredAt()
         );
