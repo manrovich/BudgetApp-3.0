@@ -1,4 +1,4 @@
-package ru.manrovich.cashflow.application.reference.currency.web;
+package ru.manrovich.cashflow.application.reference.currency.web.admin;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.manrovich.cashflow.application.reference.currency.usecase.CurrencyUseCase;
 import ru.manrovich.cashflow.application.reference.currency.usecase.result.SeedCurrenciesResult;
-import ru.manrovich.cashflow.application.reference.currency.web.dto.SeedCurrenciesRequest;
-import ru.manrovich.cashflow.application.reference.currency.web.dto.SeedCurrenciesResponse;
-import ru.manrovich.cashflow.application.reference.currency.web.mapper.CurrencyWebMapper;
+import ru.manrovich.cashflow.application.reference.currency.web.admin.dto.SeedCurrenciesRequest;
+import ru.manrovich.cashflow.application.reference.currency.web.admin.dto.SeedCurrenciesResponse;
+import ru.manrovich.cashflow.application.reference.currency.web.admin.mapper.CurrencyAdminWebMapper;
 
 import java.util.Locale;
 
@@ -20,7 +20,7 @@ import java.util.Locale;
 public class CurrencyAdminController {
 
     private final CurrencyUseCase currencyUseCase;
-    private final CurrencyWebMapper webMapper;
+    private final CurrencyAdminWebMapper webMapper;
 
     @PostMapping("seed")
     public SeedCurrenciesResponse seed(

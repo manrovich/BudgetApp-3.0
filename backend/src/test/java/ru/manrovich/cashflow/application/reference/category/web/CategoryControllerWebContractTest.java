@@ -62,6 +62,7 @@ class CategoryControllerWebContractTest extends WebContractTestBase {
 
     @Test
     void create_shouldReturn400_whenRequestInvalid_andNotCallUseCase() throws Exception {
+        // @NotBlank нарушен
         CreateCategoryRequest request = new CreateCategoryRequest("   ");
 
         mvc.perform(post("/api/categories")
@@ -69,6 +70,7 @@ class CategoryControllerWebContractTest extends WebContractTestBase {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                // общий контракт ошибок: fieldErrors есть всегда
                 .andExpect(jsonPath("$.fieldErrors", hasSize(1)))
                 .andExpect(jsonPath("$.fieldErrors[*].field", hasItem("name")));
 

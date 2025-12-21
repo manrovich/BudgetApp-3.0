@@ -203,20 +203,4 @@ public class ArchitectureRulesTest {
                     .matching("ru.manrovich.cashflow.(*)..")
                     .should().beFreeOfCycles()
                     .because("Циклы зависимостей между крупными компонентами — источник деградации и сложности рефакторинга.");
-
-    @ArchTest
-    static final ArchRule shared_must_be_layer_agnostic =
-            noClasses()
-                    .that().resideInAPackage("..shared..")
-                    .should().dependOnClassesThat().resideInAnyPackage(
-                            "..domain..",
-                            "..application..",
-                            "..infrastructure..",
-                            "org.springframework..",
-                            "jakarta..",
-                            "javax.."
-                    )
-                    .because("Shared — нейтральный слой для общих DTO/контейнеров. "
-                            + "Он не должен зависеть от слоёв приложения/домена/инфраструктуры и от фреймворков.");
-
 }

@@ -1,4 +1,4 @@
-package ru.manrovich.cashflow.application.reference.currency.web.dto;
+package ru.manrovich.cashflow.application.reference.currency.web.admin.dto;
 
 public record SeedCurrenciesRequest(Boolean dryRun) {
 

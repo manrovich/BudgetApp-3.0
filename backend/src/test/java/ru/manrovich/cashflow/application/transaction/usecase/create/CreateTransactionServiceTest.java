@@ -1,4 +1,4 @@
-package ru.manrovich.cashflow.application.transaction.usecase;
+package ru.manrovich.cashflow.application.transaction.usecase.create;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,7 +9,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.manrovich.cashflow.application.common.security.CurrentUserProvider;
 import ru.manrovich.cashflow.application.transaction.service.TransactionApplicationService;
 import ru.manrovich.cashflow.application.transaction.usecase.command.CreateTransactionCommand;
-import ru.manrovich.cashflow.application.transaction.usecase.query.ListTransactionsQuery;
 import ru.manrovich.cashflow.application.transaction.usecase.result.CreateTransactionResult;
 import ru.manrovich.cashflow.domain.kernel.exception.NotFoundException;
 import ru.manrovich.cashflow.domain.kernel.exception.ValidationException;
@@ -19,32 +18,24 @@ import ru.manrovich.cashflow.domain.kernel.id.WalletId;
 import ru.manrovich.cashflow.domain.reference.category.port.CategoryQueryPort;
 import ru.manrovich.cashflow.domain.transaction.model.Transaction;
 import ru.manrovich.cashflow.domain.transaction.model.TransactionType;
-import ru.manrovich.cashflow.domain.transaction.port.TransactionQueryPort;
 import ru.manrovich.cashflow.domain.transaction.port.TransactionRepository;
 import ru.manrovich.cashflow.domain.wallet.port.WalletQueryPort;
-import ru.manrovich.cashflow.shared.query.Slice;
-import ru.manrovich.cashflow.shared.query.SlicePage;
-import ru.manrovich.cashflow.shared.readmodel.TransactionListItem;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static ru.manrovich.cashflow.testing.data.TestUsers.USER_1;
 
 @ExtendWith(MockitoExtension.class)
-class TransactionApplicationServiceTest {
+class CreateTransactionServiceTest {
 
     @Mock
     TransactionRepository transactionRepository;
@@ -52,8 +43,6 @@ class TransactionApplicationServiceTest {
     WalletQueryPort walletQueryPort;
     @Mock
     CategoryQueryPort categoryQueryPort;
-    @Mock
-    TransactionQueryPort transactionQueryPort;
     @Mock
     CurrentUserProvider currentUserProvider;
 
@@ -208,132 +197,5 @@ class TransactionApplicationServiceTest {
 
         assertThrows(ValidationException.class, () -> service.create(cmd));
         verify(transactionRepository, never()).save(any());
-    }
-
-    @Test
-    void list_shouldThrowValidation_whenFromAfterTo_andNotCallPort() {
-        ListTransactionsQuery query = new ListTransactionsQuery(
-                null,
-                Instant.parse("2025-12-10T00:00:00Z"),
-                Instant.parse("2025-12-01T00:00:00Z"),
-                null,
-                null
-        );
-
-        assertThrows(ValidationException.class, () -> service.list(query));
-        verifyNoInteractions(transactionQueryPort);
-    }
-
-    @Test
-    void list_shouldUseDefaults_whenPageAndSizeNull() {
-        Slice<TransactionListItem> expected = new Slice<>(
-                List.of(),
-                new SlicePage(0, 50, false)
-        );
-
-        when(transactionQueryPort.findListItems(any(TransactionQueryPort.TransactionSearchCriteria.class)))
-                .thenReturn(expected);
-
-        ListTransactionsQuery query = new ListTransactionsQuery(
-                null,
-                Instant.parse("2025-12-01T00:00:00Z"),
-                Instant.parse("2025-12-31T23:59:59Z"),
-                null,
-                null
-        );
-
-        Slice<TransactionListItem> actual = service.list(query);
-
-        assertSame(expected, actual);
-
-        ArgumentCaptor<TransactionQueryPort.TransactionSearchCriteria> captor =
-                ArgumentCaptor.forClass(TransactionQueryPort.TransactionSearchCriteria.class);
-
-        verify(transactionQueryPort).findListItems(captor.capture());
-
-        TransactionQueryPort.TransactionSearchCriteria criteria = captor.getValue();
-        assertNull(criteria.walletId());
-        assertEquals(query.from(), criteria.from());
-        assertEquals(query.to(), criteria.to());
-        assertEquals(0, criteria.page());
-        assertEquals(50, criteria.size()); // этот ассерт упадёт, пока ты не исправишь default size на 50
-    }
-
-    @Test
-    void list_shouldClampPageAndSize() {
-        Slice<TransactionListItem> expected = new Slice<>(
-                List.of(),
-                new SlicePage(0, 200, false)
-        );
-
-        when(transactionQueryPort.findListItems(any(TransactionQueryPort.TransactionSearchCriteria.class)))
-                .thenReturn(expected);
-
-        ListTransactionsQuery query = new ListTransactionsQuery(
-                null,
-                null,
-                null,
-                -100,
-                10_000
-        );
-
-        service.list(query);
-
-        ArgumentCaptor<TransactionQueryPort.TransactionSearchCriteria> captor =
-                ArgumentCaptor.forClass(TransactionQueryPort.TransactionSearchCriteria.class);
-
-        verify(transactionQueryPort).findListItems(captor.capture());
-
-        TransactionQueryPort.TransactionSearchCriteria criteria = captor.getValue();
-        assertEquals(0, criteria.page());
-        assertEquals(200, criteria.size());
-    }
-
-    @Test
-    void list_shouldParseWalletId_andPassItToCriteria() {
-        Slice<TransactionListItem> expected = new Slice<>(
-                List.of(),
-                new SlicePage(0, 50, false)
-        );
-
-        when(transactionQueryPort.findListItems(any(TransactionQueryPort.TransactionSearchCriteria.class)))
-                .thenReturn(expected);
-
-        UUID walletUuid = UUID.randomUUID();
-
-        ListTransactionsQuery query = new ListTransactionsQuery(
-                walletUuid.toString(),
-                Instant.parse("2025-12-01T00:00:00Z"),
-                Instant.parse("2025-12-31T23:59:59Z"),
-                1,
-                20
-        );
-
-        service.list(query);
-
-        ArgumentCaptor<TransactionQueryPort.TransactionSearchCriteria> captor =
-                ArgumentCaptor.forClass(TransactionQueryPort.TransactionSearchCriteria.class);
-
-        verify(transactionQueryPort).findListItems(captor.capture());
-
-        TransactionQueryPort.TransactionSearchCriteria criteria = captor.getValue();
-        assertNotNull(criteria.walletId());
-        assertEquals(walletUuid, criteria.walletId().value());
-        assertEquals(1, criteria.page());
-        assertEquals(20, criteria.size());
-    }
-
-    @Test
-    void list_shouldThrowIllegalArgumentException_whenWalletIdInvalidUuid() {
-        ListTransactionsQuery query = new ListTransactionsQuery(
-                "not-a-uuid",
-                null,
-                null,
-                0,
-                50
-        );
-
-        assertThrows(IllegalArgumentException.class, () -> service.list(query));
-        verifyNoInteractions(transactionQueryPort);
     }
 }

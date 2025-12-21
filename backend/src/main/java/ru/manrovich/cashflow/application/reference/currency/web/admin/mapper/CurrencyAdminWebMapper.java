@@ -1,20 +1,18 @@
-package ru.manrovich.cashflow.application.reference.currency.web.mapper;
+package ru.manrovich.cashflow.application.reference.currency.web.admin.mapper;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 import ru.manrovich.cashflow.application.reference.currency.usecase.command.SeedCurrenciesCommand;
-import ru.manrovich.cashflow.application.reference.currency.usecase.query.ListCurrenciesQuery;
 import ru.manrovich.cashflow.application.reference.currency.usecase.result.SeedCurrenciesResult;
-import ru.manrovich.cashflow.application.reference.currency.web.dto.ListCurrenciesRequest;
-import ru.manrovich.cashflow.application.reference.currency.web.dto.SeedCurrenciesRequest;
-import ru.manrovich.cashflow.application.reference.currency.web.dto.SeedCurrenciesResponse;
+import ru.manrovich.cashflow.application.reference.currency.web.admin.dto.SeedCurrenciesRequest;
+import ru.manrovich.cashflow.application.reference.currency.web.admin.dto.SeedCurrenciesResponse;
 
 import java.util.Locale;
 
 @Component
 @RequiredArgsConstructor
-public class CurrencyWebMapper {
+public class CurrencyAdminWebMapper {
 
     private final MessageSource messageSource;
 
@@ -36,14 +34,6 @@ public class CurrencyWebMapper {
                 result.dryRun(),
                 result.insertedCodes(),
                 summary
-        );
-    }
-
-    public ListCurrenciesQuery toListQuery(ListCurrenciesRequest request) {
-        return new ListCurrenciesQuery(
-                request.query(),
-                request.page(),
-                request.size()
         );
     }
 }
