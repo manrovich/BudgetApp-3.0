@@ -1,4 +1,4 @@
-package ru.manrovich.cashflow.application.transaction.usecase;
+package ru.manrovich.cashflow.application.wallet.usecase;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,7 +53,7 @@ class TransactionApplicationServiceTest {
     TransactionApplicationService service;
 
     @Test
-    void execute_shouldCreateTransaction_whenOk() {
+    void create_shouldCreateTransaction_whenOk() {
         when(currentUserProvider.currentUserId()).thenReturn(USER_1);
 
         UUID walletUuid = UUID.randomUUID();
@@ -95,7 +95,7 @@ class TransactionApplicationServiceTest {
     }
 
     @Test
-    void execute_shouldThrowNotFound_whenWalletMissing() {
+    void create_shouldThrowNotFound_whenWalletMissing() {
         when(currentUserProvider.currentUserId()).thenReturn(USER_1);
 
         UUID walletUuid = UUID.randomUUID();
@@ -115,7 +115,7 @@ class TransactionApplicationServiceTest {
     }
 
     @Test
-    void execute_shouldThrowNotFound_whenCategoryMissing() {
+    void create_shouldThrowNotFound_whenCategoryMissing() {
         when(currentUserProvider.currentUserId()).thenReturn(USER_1);
 
         UUID walletUuid = UUID.randomUUID();
@@ -140,7 +140,7 @@ class TransactionApplicationServiceTest {
     }
 
     @Test
-    void execute_shouldThrowValidation_whenAmountZero() {
+    void create_shouldThrowValidation_whenAmountZero() {
         when(currentUserProvider.currentUserId()).thenReturn(USER_1);
 
         UUID walletUuid = UUID.randomUUID();
@@ -161,7 +161,7 @@ class TransactionApplicationServiceTest {
     }
 
     @Test
-    void execute_shouldThrowValidation_whenTypeUnknown() {
+    void create_shouldThrowValidation_whenTypeUnknown() {
         when(currentUserProvider.currentUserId()).thenReturn(USER_1);
 
         UUID walletUuid = UUID.randomUUID();
@@ -182,7 +182,7 @@ class TransactionApplicationServiceTest {
     }
 
     @Test
-    void execute_shouldThrowValidation_whenTypeNull() {
+    void create_shouldThrowValidation_whenTypeNull() {
         when(currentUserProvider.currentUserId()).thenReturn(USER_1);
 
         UUID walletUuid = UUID.randomUUID();

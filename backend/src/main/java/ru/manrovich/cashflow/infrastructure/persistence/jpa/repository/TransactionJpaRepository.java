@@ -1,6 +1,5 @@
 package ru.manrovich.cashflow.infrastructure.persistence.jpa.repository;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import ru.manrovich.cashflow.infrastructure.persistence.jpa.entity.TransactionEntity;
@@ -38,18 +37,25 @@ public interface TransactionJpaRepository extends JpaRepository<TransactionEntit
     BigDecimal sumAmountsByOwnerIdAndWalletId(UUID ownerId, UUID walletId);
 
     @Query("""
-           select
-             t.id as id,
-             t.walletId as walletId,
-             t.type as type,
-             t.amount as amount,
-             t.currencyCode as currencyCode,
-             t.occurredAt as occurredAt,
-             t.categoryId as categoryId
-           from TransactionEntity t
-           where (:walletId is null or t.walletId = :walletId)
-             and (:from is null or t.occurredAt >= :from)
-             and (:to is null or t.occurredAt <= :to)
-           """)
-    List<TransactionListRow> findListRows(UUID walletId, Instant from, Instant to, Pageable pageable);
+    select
+      t.id as id,
+      t.walletId as walletId,
+      t.type as type,
+      t.amount as amount,
+      t.currencyCode as currencyCode,
+      t.occurredAt as occurredAt,
+      t.categoryId as categoryId
+    from TransactionEntity t
+    where t.ownerId = :ownerId
+      and (:walletId is null or t.walletId = :walletId)
+      and (:from is null or t.occurredAt >= :from)
+      and (:to is null or t.occurredAt <= :to)
+    order by t.occurredAt asc
+    """)
+    List<TransactionListRow> findListRows(
+           UUID ownerId,
+           UUID walletId,
+           Instant from,
+           Instant to
+    );
 }
