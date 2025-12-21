@@ -3,6 +3,7 @@ package ru.manrovich.cashflow.application.wallet.web;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,6 +37,7 @@ public class WalletController {
         return mapper.toCreateResponse(result);
     }
 
+    @GetMapping("{walletId}/transaction")
     public ItemsResponse<TransactionListItem> list(
             @PathVariable String walletId,
             @Valid @ModelAttribute ListWalletTransactionsRequest request) {
