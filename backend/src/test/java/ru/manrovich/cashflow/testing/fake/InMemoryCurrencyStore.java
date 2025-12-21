@@ -4,6 +4,8 @@ import ru.manrovich.cashflow.domain.kernel.id.CurrencyId;
 import ru.manrovich.cashflow.domain.reference.currency.model.Currency;
 import ru.manrovich.cashflow.domain.reference.currency.port.CurrencyQueryPort;
 import ru.manrovich.cashflow.domain.reference.currency.port.CurrencyRepository;
+import ru.manrovich.cashflow.shared.query.Slice;
+import ru.manrovich.cashflow.shared.readmodel.CurrencyListItem;
 
 import java.util.Collection;
 import java.util.Map;
@@ -36,5 +38,10 @@ public final class InMemoryCurrencyStore implements CurrencyRepository, Currency
 
     public boolean isEmpty() {
         return storage.isEmpty();
+    }
+
+    @Override
+    public Slice<CurrencyListItem> findListItems(CurrencySearchCriteria criteria) {
+        throw new UnsupportedOperationException();
     }
 }

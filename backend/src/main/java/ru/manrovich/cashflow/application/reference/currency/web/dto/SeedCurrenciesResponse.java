@@ -1,4 +1,4 @@
-package ru.manrovich.cashflow.application.reference.currency.web.admin.dto;
+package ru.manrovich.cashflow.application.reference.currency.web.dto;
 
 import java.util.List;
 

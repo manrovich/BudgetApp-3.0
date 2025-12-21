@@ -1,4 +1,4 @@
-package ru.manrovich.cashflow.application.reference.currency.usecase.seed;
+package ru.manrovich.cashflow.application.reference.currency.usecase;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class SeedCurrenciesServiceTest {
+class CurrenciesApplicationServiceInMemoryTest {
 
     private InMemoryCurrencyStore store;
     private CurrencyApplicationService service;
@@ -89,7 +89,6 @@ class SeedCurrenciesServiceTest {
         CurrencyRepository repo = mock(CurrencyRepository.class);
         CurrencyQueryPort query = mock(CurrencyQueryPort.class);
 
-        // Пусть всё "уже существует" => toInsert пустой
         when(query.exists(any(CurrencyId.class))).thenReturn(true);
 
         CurrencyApplicationService service = new CurrencyApplicationService(repo, query);
