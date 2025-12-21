@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.manrovich.cashflow.application.common.security.CurrentUserProvider;
 import ru.manrovich.cashflow.application.reference.category.usecase.CategoryUseCase;
 import ru.manrovich.cashflow.application.reference.category.usecase.command.CreateCategoryCommand;
-import ru.manrovich.cashflow.application.reference.category.usecase.query.ListCategoriesQuery;
 import ru.manrovich.cashflow.application.reference.category.usecase.result.CreateCategoryResult;
 import ru.manrovich.cashflow.domain.kernel.exception.ConflictException;
 import ru.manrovich.cashflow.domain.kernel.id.CategoryId;
@@ -15,8 +14,6 @@ import ru.manrovich.cashflow.domain.reference.category.model.Category;
 import ru.manrovich.cashflow.domain.reference.category.model.CategoryName;
 import ru.manrovich.cashflow.domain.reference.category.port.CategoryQueryPort;
 import ru.manrovich.cashflow.domain.reference.category.port.CategoryRepository;
-import ru.manrovich.cashflow.shared.query.Slice;
-import ru.manrovich.cashflow.shared.readmodel.CategoryListItem;
 
 import java.util.UUID;
 
@@ -25,7 +22,7 @@ import java.util.UUID;
 public class CategoryApplicationService implements CategoryUseCase {
 
     private final CategoryRepository categoryRepository;
-    private final CategoryQueryPort categoryQueryPort;
+    private final CategoryQueryPort queryPort;
     private final CurrentUserProvider currentUserProvider;
 
     @Override
@@ -34,7 +31,7 @@ public class CategoryApplicationService implements CategoryUseCase {
         UserId ownerId = currentUserProvider.currentUserId();
         CategoryName name = new CategoryName(command.name());
 
-        if (categoryQueryPort.existsByNameIgnoreCase(ownerId, name)) {
+        if (queryPort.existsByNameIgnoreCase(ownerId, name)) {
             throw new ConflictException("Category with name already exists: " + name.value());
         }
 
@@ -50,22 +47,5 @@ public class CategoryApplicationService implements CategoryUseCase {
                 saved.id().value().toString(),
                 saved.name().value()
         );
-    }
-
-    @Override
-    public Slice<CategoryListItem> list(ListCategoriesQuery query) {
-        int page = query.page() == null ? 0 : Math.max(query.page(), 0);
-        int size = query.size() == null ? 200 : Math.min(Math.max(query.size(), 1), 200);
-
-        UserId ownerId = currentUserProvider.currentUserId();
-
-        var criteria = new CategoryQueryPort.CategorySearchCriteria(
-                ownerId,
-                query.query(),
-                page,
-                size
-        );
-
-        return categoryQueryPort.findListItems(criteria);
     }
 }

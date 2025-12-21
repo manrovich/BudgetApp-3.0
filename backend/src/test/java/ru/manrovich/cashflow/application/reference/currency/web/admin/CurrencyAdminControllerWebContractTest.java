@@ -1,4 +1,4 @@
-package ru.manrovich.cashflow.application.reference.currency.web;
+package ru.manrovich.cashflow.application.reference.currency.web.admin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -12,8 +12,8 @@ import ru.manrovich.cashflow.application.common.web.TraceIdFilter;
 import ru.manrovich.cashflow.application.reference.currency.usecase.CurrencyUseCase;
 import ru.manrovich.cashflow.application.reference.currency.usecase.command.SeedCurrenciesCommand;
 import ru.manrovich.cashflow.application.reference.currency.usecase.result.SeedCurrenciesResult;
-import ru.manrovich.cashflow.application.reference.currency.web.dto.SeedCurrenciesRequest;
-import ru.manrovich.cashflow.application.reference.currency.web.mapper.CurrencyWebMapper;
+import ru.manrovich.cashflow.application.reference.currency.web.admin.dto.SeedCurrenciesRequest;
+import ru.manrovich.cashflow.application.reference.currency.web.admin.mapper.CurrencyAdminWebMapper;
 import ru.manrovich.cashflow.testing.web.WebContractTestBase;
 
 import java.util.List;
@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = CurrencyAdminController.class)
-@Import(CurrencyWebMapper.class)
+@Import(CurrencyAdminWebMapper.class)
 class CurrencyAdminControllerWebContractTest extends WebContractTestBase {
 
     @Autowired MockMvc mvc;
