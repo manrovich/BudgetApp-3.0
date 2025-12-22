@@ -1,4 +1,4 @@
-package ru.manrovich.cashflow.application.transaction.usecase.create;
+package ru.manrovich.cashflow.application.transaction.usecase;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +18,7 @@ import ru.manrovich.cashflow.domain.kernel.id.WalletId;
 import ru.manrovich.cashflow.domain.reference.category.port.CategoryQueryPort;
 import ru.manrovich.cashflow.domain.transaction.model.Transaction;
 import ru.manrovich.cashflow.domain.transaction.model.TransactionType;
+import ru.manrovich.cashflow.domain.transaction.port.TransactionQueryPort;
 import ru.manrovich.cashflow.domain.transaction.port.TransactionRepository;
 import ru.manrovich.cashflow.domain.wallet.port.WalletQueryPort;
 
@@ -35,7 +36,7 @@ import static org.mockito.Mockito.when;
 import static ru.manrovich.cashflow.testing.data.TestUsers.USER_1;
 
 @ExtendWith(MockitoExtension.class)
-class CreateTransactionServiceTest {
+class TransactionApplicationServiceTest {
 
     @Mock
     TransactionRepository transactionRepository;
@@ -43,6 +44,8 @@ class CreateTransactionServiceTest {
     WalletQueryPort walletQueryPort;
     @Mock
     CategoryQueryPort categoryQueryPort;
+    @Mock
+    TransactionQueryPort transactionQueryPort;
     @Mock
     CurrentUserProvider currentUserProvider;
 

@@ -19,13 +19,13 @@ import ru.manrovich.cashflow.application.transaction.web.mapper.TransactionWebMa
 @RequiredArgsConstructor
 public class TransactionController {
 
-    private final TransactionUseCase transactionUseCase;
-    private final TransactionWebMapper webMapper;
+    private final TransactionUseCase useCase;
+    private final TransactionWebMapper mapper;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CreateTransactionResponse create(@Valid @RequestBody CreateTransactionRequest request) {
-        CreateTransactionResult result = transactionUseCase.create(webMapper.toCreateCommand(request));
-        return webMapper.toCreateResponse(result);
+        CreateTransactionResult result = useCase.create(mapper.toCreateCommand(request));
+        return mapper.toCreateResponse(result);
     }
 }
