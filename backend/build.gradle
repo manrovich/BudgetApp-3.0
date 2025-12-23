@@ -61,3 +61,25 @@ openApi {
 		]
 	}
 }
+
+tasks.named('test', Test) {
+	useJUnitPlatform()
+
+	def withIntegration = project.hasProperty('withIntegration') ||
+			((System.getenv('WITH_INTEGRATION_TESTS') ?: 'false').toBoolean())
+
+	if (!withIntegration) {
+		useJUnitPlatform { excludeTags 'integration' }
+		logger.lifecycle("Running unit tests only (integration tests are excluded).")
+	} else {
+		logger.lifecycle("Running ALL tests including integration tests.")
+	}
+}
+
+tasks.register('integrationTest', Test) {
+	group = LifecycleBasePlugin.VERIFICATION_GROUP
+	useJUnitPlatform {
+		includeTags 'integration'
+	}
+	shouldRunAfter tasks.test
+}
