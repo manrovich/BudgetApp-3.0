@@ -10,9 +10,6 @@ version = '0.0.1-SNAPSHOT'
 description = 'Budget Application'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
-	}
 }
 
 configurations {
@@ -45,10 +42,6 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-tasks.named('test') {
-	useJUnitPlatform()
-}
-
 openApi {
 	apiDocsUrl.set("http://localhost:5000/v3/api-docs.yaml")
 	outputDir.set(file("$buildDir/openapi"))
@@ -60,6 +53,10 @@ openApi {
 				"--spring.profiles.active=openapi"
 		]
 	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.release = 17
 }
 
 tasks.named('test', Test) {
