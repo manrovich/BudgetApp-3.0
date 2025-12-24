@@ -1,8 +1,8 @@
 package ru.manrovich.cashflow.testing.web;
 
 import org.springframework.context.annotation.Import;
-import ru.manrovich.cashflow.application.common.web.RestExceptionHandler;
-import ru.manrovich.cashflow.application.common.web.TraceIdFilter;
+import ru.manrovich.cashflow.api.common.error.RestExceptionHandler;
+import ru.manrovich.cashflow.api.common.tracing.TraceIdFilter;
 
 @Import({
         RestExceptionHandler.class,

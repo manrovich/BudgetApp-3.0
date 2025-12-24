@@ -1,12 +1,11 @@
 package ru.manrovich.cashflow.domain.wallet.port;
 
-import ru.manrovich.cashflow.domain.kernel.id.CurrencyId;
 import ru.manrovich.cashflow.domain.kernel.id.UserId;
 import ru.manrovich.cashflow.domain.kernel.id.WalletId;
 
+import java.util.Optional;
+
 public interface WalletQueryPort {
 
-    boolean exists(UserId ownerId, WalletId walletId);
-
-    CurrencyId getCurrencyId(UserId ownerId, WalletId walletId);
+    Optional<WalletSnapshot> findSnapshot(UserId ownerId, WalletId walletId);
 }
