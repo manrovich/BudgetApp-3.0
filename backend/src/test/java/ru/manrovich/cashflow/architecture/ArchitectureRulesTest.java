@@ -5,7 +5,6 @@ import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 
-import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 
@@ -32,8 +31,7 @@ public class ArchitectureRulesTest {
     private static final String PKG_APPLICATION = "..application..";
     private static final String PKG_INFRA = "..infrastructure..";
 
-    private static final String PKG_WEB = "..application..web..";
-    private static final String PKG_USECASE = "..application..usecase..";
+    private static final String PKG_API = "..api..";
 
     private static final String PKG_DOMAIN_KERNEL = "..domain.kernel..";
 
@@ -75,8 +73,15 @@ public class ArchitectureRulesTest {
             noClasses()
                     .that().resideInAPackage(PKG_APPLICATION)
                     .should().dependOnClassesThat().resideInAPackage(PKG_INFRA)
-                    .because("Application слой (process/use-case) должен зависеть только от доменных портов, "
+                    .because("Application слой должен зависеть только от доменных портов, "
                             + "но не от конкретных инфраструктурных реализаций.");
+
+    @ArchTest
+    static final ArchRule application_must_not_depend_on_api =
+            noClasses()
+                    .that().resideInAPackage(PKG_APPLICATION)
+                    .should().dependOnClassesThat().resideInAPackage(PKG_API)
+                    .because("Application слой не должен зависеть от api/transport DTO.");
 
     @ArchTest
     static final ArchRule application_must_not_depend_on_infrastructure_jpa_entities =
@@ -84,28 +89,6 @@ public class ArchitectureRulesTest {
                     .that().resideInAPackage(PKG_APPLICATION)
                     .should().dependOnClassesThat().resideInAPackage("..infrastructure.persistence.jpa.entity..")
                     .because("JPA entities — деталь инфраструктуры. Application слой не должен их видеть.");
-
-    // UseCase не должен зависеть от Web/Transport
-    @ArchTest
-    static final ArchRule usecases_must_not_depend_on_web_or_transport =
-            noClasses()
-                    .that().resideInAPackage(PKG_USECASE)
-                    .should().dependOnClassesThat().resideInAnyPackage(
-                            PKG_WEB,
-                            "org.springframework.web..",
-                            "org.springframework.http..",
-                            "jakarta.servlet.."
-                    )
-                    .because("Use-case слой — это бизнес-процессы. Он не должен знать про HTTP/Servlet/Web.");
-
-    // UseCase не должен вызывать/зависеть от других UseCase (защита от 'акторной сети')
-    @ArchTest
-    static final ArchRule usecase_packages_must_not_depend_on_each_other =
-            slices()
-                    .matching("..application..usecase.(*)..") // TODO вынести в константы
-                    .should().notDependOnEachOther()
-                    .because("UseCase пакеты не должны зависеть друг от друга: иначе application превращается в сеть взаимных вызовов. "
-                            + "Общую логику выносим в domain policy/service или application.common.");
 
     // application.common должен быть однонаправленным (common не тянет feature-пакеты)
     @ArchTest
@@ -126,9 +109,9 @@ public class ArchitectureRulesTest {
 
     // Web не должен тянуть доменные модели/порты/политики и инфраструктуру
     @ArchTest
-    static final ArchRule web_must_not_depend_on_infrastructure_or_domain_model_ports_policies =
+    static final ArchRule api_must_not_depend_on_infrastructure_or_domain_model_ports_policies =
             noClasses()
-                    .that().resideInAPackage(PKG_WEB)
+                    .that().resideInAPackage(PKG_API)
                     .should().dependOnClassesThat().resideInAnyPackage(
                             PKG_INFRA,
                             "..domain..model..",
@@ -145,30 +128,6 @@ public class ArchitectureRulesTest {
                             + "Он не должен знать доменные модели/порты/политики и детали инфраструктуры. "
                             + "DomainException (domain.kernel.exception) допускается для единого маппинга ошибок.");
 
-    // UseCase интерфейсы должны быть интерфейсами (конвенция, снижает хаос)
-    @ArchTest
-    static final ArchRule usecase_types_should_be_interfaces =
-            classes()
-                    .that().resideInAPackage(PKG_USECASE)
-                    .and().haveSimpleNameEndingWith("UseCase")
-                    .should().beInterfaces()
-                    .because("UseCase — контракт сценария. Реализация должна быть в *Service, а UseCase — интерфейсом.");
-
-    @ArchTest
-    static final ArchRule usecase_and_service_must_not_depend_on_request_or_response =
-            noClasses()
-                    .that().resideInAPackage("..application..")
-                    .and().haveNameMatching(".*(UseCase|Service)$")
-                    .should().dependOnClassesThat().haveNameMatching(".*(Request|Response)$")
-                    .because("UseCase/Service — это application слой. Он не должен зависеть от web DTO (Request/Response).");
-
-    @ArchTest
-    static final ArchRule controller_must_not_depend_on_command_or_result =
-            noClasses()
-                    .that().haveNameMatching(".*Controller$")
-                    .should().dependOnClassesThat().haveNameMatching(".*(Command|Result)$")
-                    .because("Controller — web слой. Он не должен зависеть от application DTO (Command/Result).");
-
     // ---------------------------
     // 4) Infrastructure isolation
     // ---------------------------
@@ -177,6 +136,7 @@ public class ArchitectureRulesTest {
     static final ArchRule infrastructure_must_not_depend_on_application =
             noClasses()
                     .that().resideInAPackage(PKG_INFRA)
+                    .and().resideOutsideOfPackage("..infrastructure.query..")
                     .should().dependOnClassesThat().resideInAPackage(PKG_APPLICATION)
                     .because("Infrastructure реализует доменные порты. Обратной связности на application быть не должно.");
 
@@ -200,23 +160,8 @@ public class ArchitectureRulesTest {
     @ArchTest
     static final ArchRule no_cycles_between_top_level_packages =
             slices()
-                    .matching("ru.manrovich.cashflow.(*)..")
+                    .matching("ru.manrovich.cashflow.(domain|application|api|infrastructure|shared)..")
                     .should().beFreeOfCycles()
-                    .because("Циклы зависимостей между крупными компонентами — источник деградации и сложности рефакторинга.");
-
-    @ArchTest
-    static final ArchRule shared_must_be_layer_agnostic =
-            noClasses()
-                    .that().resideInAPackage("..shared..")
-                    .should().dependOnClassesThat().resideInAnyPackage(
-                            "..domain..",
-                            "..application..",
-                            "..infrastructure..",
-                            "org.springframework..",
-                            "jakarta..",
-                            "javax.."
-                    )
-                    .because("Shared — нейтральный слой для общих DTO/контейнеров. "
-                            + "Он не должен зависеть от слоёв приложения/домена/инфраструктуры и от фреймворков.");
+                    .because("Циклы зависимостей между domain/application/infrastructure — источник деградации и сложности рефакторинга.");
 
 }

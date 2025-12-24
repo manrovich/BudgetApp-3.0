@@ -26,12 +26,12 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 )
 public class WebValidationArchTest {
 
-    private static final String PKG_APPLICATION_WEB = "..application..web..";
+    private static final String PKG_API = "..api..";
 
     @ArchTest
     static final ArchRule request_body_request_parameters_must_be_validated =
             methods()
-                    .that().areDeclaredInClassesThat().resideInAPackage(PKG_APPLICATION_WEB)
+                    .that().areDeclaredInClassesThat().resideInAPackage(PKG_API)
                     .and().areDeclaredInClassesThat().areAnnotatedWith(RestController.class)
                     .or().areDeclaredInClassesThat().areAnnotatedWith(Controller.class)
                     .should(requestBodyRequestParametersMustHaveValid());

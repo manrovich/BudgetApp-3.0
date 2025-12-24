@@ -1,4 +1,4 @@
-package ru.manrovich.cashflow.application.wallet.usecase;
+package ru.manrovich.cashflow.application.transaction.command;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -7,7 +7,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.manrovich.cashflow.application.common.security.CurrentUserProvider;
-import ru.manrovich.cashflow.application.transaction.command.TransactionCommandService;
 import ru.manrovich.cashflow.application.transaction.command.CreateTransactionCommand;
 import ru.manrovich.cashflow.application.transaction.command.CreateTransactionResult;
 import ru.manrovich.cashflow.domain.kernel.exception.NotFoundException;
@@ -37,7 +36,7 @@ import static org.mockito.Mockito.when;
 import static ru.manrovich.cashflow.testing.data.TestUsers.USER_1;
 
 @ExtendWith(MockitoExtension.class)
-class TransactionApplicationServiceTest {
+class TransactionCommandServiceTest {
 
     @Mock
     TransactionRepository transactionRepository;
@@ -52,7 +51,7 @@ class TransactionApplicationServiceTest {
     TransactionCommandService service;
 
     @Test
-    void create_shouldCreateTransaction_whenOk() {
+    void execute_shouldCreateTransaction_whenOk() {
         when(currentUserProvider.currentUserId()).thenReturn(USER_1);
 
         UUID walletUuid = UUID.randomUUID();
@@ -94,7 +93,7 @@ class TransactionApplicationServiceTest {
     }
 
     @Test
-    void create_shouldThrowNotFound_whenWalletMissing() {
+    void execute_shouldThrowNotFound_whenWalletMissing() {
         when(currentUserProvider.currentUserId()).thenReturn(USER_1);
 
         UUID walletUuid = UUID.randomUUID();
@@ -114,7 +113,7 @@ class TransactionApplicationServiceTest {
     }
 
     @Test
-    void create_shouldThrowNotFound_whenCategoryMissing() {
+    void execute_shouldThrowNotFound_whenCategoryMissing() {
         when(currentUserProvider.currentUserId()).thenReturn(USER_1);
 
         UUID walletUuid = UUID.randomUUID();
@@ -139,7 +138,7 @@ class TransactionApplicationServiceTest {
     }
 
     @Test
-    void create_shouldThrowValidation_whenAmountZero() {
+    void execute_shouldThrowValidation_whenAmountZero() {
         when(currentUserProvider.currentUserId()).thenReturn(USER_1);
 
         UUID walletUuid = UUID.randomUUID();
@@ -160,7 +159,7 @@ class TransactionApplicationServiceTest {
     }
 
     @Test
-    void create_shouldThrowValidation_whenTypeUnknown() {
+    void execute_shouldThrowValidation_whenTypeUnknown() {
         when(currentUserProvider.currentUserId()).thenReturn(USER_1);
 
         UUID walletUuid = UUID.randomUUID();
@@ -181,7 +180,7 @@ class TransactionApplicationServiceTest {
     }
 
     @Test
-    void create_shouldThrowValidation_whenTypeNull() {
+    void execute_shouldThrowValidation_whenTypeNull() {
         when(currentUserProvider.currentUserId()).thenReturn(USER_1);
 
         UUID walletUuid = UUID.randomUUID();

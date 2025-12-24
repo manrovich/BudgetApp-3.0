@@ -3,7 +3,7 @@ package ru.manrovich.cashflow.infrastructure.persistence.jpa.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import ru.manrovich.cashflow.infrastructure.persistence.jpa.entity.TransactionEntity;
-import ru.manrovich.cashflow.infrastructure.persistence.jpa.repository.projection.TransactionListRow;
+import ru.manrovich.cashflow.infrastructure.query.transaction.TransactionListRow;
 
 import java.math.BigDecimal;
 import java.time.Instant;

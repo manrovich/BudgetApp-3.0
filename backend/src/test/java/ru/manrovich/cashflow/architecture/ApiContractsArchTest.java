@@ -21,49 +21,49 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 )
 public class ApiContractsArchTest {
 
-    private static final String PKG_APP_WEB = "..application..web..";
+    private static final String PKG_API_DTO = "..api..dto..";
     private static final String PKG_DOMAIN = "..domain..";
     private static final String PKG_INFRA = "..infrastructure..";
 
     @ArchTest
     static final ArchRule requests_must_not_depend_on_domain_or_infrastructure =
             noClasses()
-                    .that().resideInAPackage(PKG_APP_WEB)
+                    .that().resideInAPackage(PKG_API_DTO)
                     .and().haveSimpleNameEndingWith("Request")
                     .should().dependOnClassesThat().resideInAnyPackage(PKG_DOMAIN, PKG_INFRA);
 
     @ArchTest
     static final ArchRule responses_must_not_depend_on_domain_or_infrastructure =
             noClasses()
-                    .that().resideInAPackage(PKG_APP_WEB)
+                    .that().resideInAPackage(PKG_API_DTO)
                     .and().haveSimpleNameEndingWith("Response")
                     .should().dependOnClassesThat().resideInAnyPackage(PKG_DOMAIN, PKG_INFRA);
 
     @ArchTest
     static final ArchRule requests_must_not_use_uuid_type =
             noClasses()
-                    .that().resideInAPackage(PKG_APP_WEB)
+                    .that().resideInAPackage(PKG_API_DTO)
                     .and().haveSimpleNameEndingWith("Request")
                     .should().dependOnClassesThat().haveNameMatching("java\\.util\\.UUID");
 
     @ArchTest
     static final ArchRule responses_must_not_use_uuid_type =
             noClasses()
-                    .that().resideInAPackage(PKG_APP_WEB)
+                    .that().resideInAPackage(PKG_API_DTO)
                     .and().haveSimpleNameEndingWith("Response")
                     .should().dependOnClassesThat().haveNameMatching("java\\.util\\.UUID");
 
     @ArchTest
     static final ArchRule requests_should_be_records =
             classes()
-                    .that().resideInAPackage(PKG_APP_WEB)
+                    .that().resideInAPackage(PKG_API_DTO)
                     .and().haveSimpleNameEndingWith("Request")
                     .should(beARecord());
 
     @ArchTest
     static final ArchRule responses_should_be_records =
             classes()
-                    .that().resideInAPackage(PKG_APP_WEB)
+                    .that().resideInAPackage(PKG_API_DTO)
                     .and().haveSimpleNameEndingWith("Response")
                     .should(beARecord());
 

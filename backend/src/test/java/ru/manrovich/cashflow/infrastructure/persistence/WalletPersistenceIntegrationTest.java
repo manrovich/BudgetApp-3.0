@@ -45,7 +45,7 @@ class WalletPersistenceIntegrationTest extends AbstractPostgresIntegrationTest {
     @Test
     void exists_shouldReturnFalse_whenWalletNotSaved() {
         WalletId id = new WalletId(UUID.randomUUID());
-        assertFalse(walletQueryPortAdapter.exists(USER_1, id));
+        assertTrue(walletQueryPortAdapter.findSnapshot(USER_1, id).isEmpty());
     }
 
     @Test
@@ -61,8 +61,8 @@ class WalletPersistenceIntegrationTest extends AbstractPostgresIntegrationTest {
         walletRepositoryAdapter.save(wallet);
         walletJpaRepository.flush();
 
-        assertTrue(walletQueryPortAdapter.exists(USER_1, id));
-        assertEquals("RUB", walletQueryPortAdapter.getCurrencyId(USER_1, id).value());
+        assertTrue(walletQueryPortAdapter.findSnapshot(USER_1, id).isPresent());
+        assertEquals("RUB", walletQueryPortAdapter.findSnapshot(USER_1, id).orElseThrow().currencyId().value());
 
         Wallet loaded = walletRepositoryAdapter.findById(USER_1, id)
                 .orElseThrow(() -> new AssertionError("Wallet must be found"));
@@ -93,12 +93,12 @@ class WalletPersistenceIntegrationTest extends AbstractPostgresIntegrationTest {
         walletRepositoryAdapter.deleteById(USER_2, id);
         walletJpaRepository.flush();
 
-        assertTrue(walletQueryPortAdapter.exists(USER_1, id));
+        assertTrue(walletQueryPortAdapter.findSnapshot(USER_1, id).isPresent());
 
         walletRepositoryAdapter.deleteById(USER_1, id);
         walletJpaRepository.flush();
 
-        assertFalse(walletQueryPortAdapter.exists(USER_1, id));
+        assertTrue(walletQueryPortAdapter.findSnapshot(USER_1, id).isEmpty());
     }
 
     @Test

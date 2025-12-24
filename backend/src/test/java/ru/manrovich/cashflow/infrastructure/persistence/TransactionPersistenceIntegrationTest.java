@@ -10,7 +10,6 @@ import ru.manrovich.cashflow.domain.kernel.id.WalletId;
 import ru.manrovich.cashflow.domain.kernel.money.Money;
 import ru.manrovich.cashflow.domain.transaction.model.Transaction;
 import ru.manrovich.cashflow.domain.transaction.model.TransactionType;
-import ru.manrovich.cashflow.infrastructure.persistence.jpa.adapter.TransactionQueryPortAdapter;
 import ru.manrovich.cashflow.infrastructure.persistence.jpa.adapter.TransactionRepositoryAdapter;
 import ru.manrovich.cashflow.infrastructure.persistence.jpa.entity.TransactionEntity;
 import ru.manrovich.cashflow.infrastructure.persistence.jpa.mapper.TransactionEntityMapper;
@@ -32,7 +31,6 @@ import static ru.manrovich.cashflow.testing.data.TestUsers.USER_2;
 @JpaIntegrationTest
 @Import({
         TransactionRepositoryAdapter.class,
-        TransactionQueryPortAdapter.class,
         TransactionEntityMapper.class
 })
 class TransactionPersistenceIntegrationTest extends AbstractPostgresIntegrationTest {
@@ -41,15 +39,12 @@ class TransactionPersistenceIntegrationTest extends AbstractPostgresIntegrationT
     private TransactionRepositoryAdapter transactionRepositoryAdapter;
 
     @Autowired
-    private TransactionQueryPortAdapter transactionQueryPortAdapter;
-
-    @Autowired
     private TransactionJpaRepository transactionJpaRepository;
 
     @Test
     void exists_shouldReturnFalse_whenNotSaved() {
         TransactionId id = new TransactionId(UUID.randomUUID());
-        assertFalse(transactionQueryPortAdapter.exists(USER_1, id));
+        assertFalse(transactionJpaRepository.existsByOwnerIdAndId(USER_1.value(), id.value()));
     }
 
     @Test
@@ -69,7 +64,7 @@ class TransactionPersistenceIntegrationTest extends AbstractPostgresIntegrationT
         transactionRepositoryAdapter.save(tx);
         transactionJpaRepository.flush();
 
-        assertTrue(transactionQueryPortAdapter.exists(USER_1, id));
+        assertTrue(transactionJpaRepository.existsByOwnerIdAndId(USER_1.value(), id.value()));
 
         Transaction loaded = transactionRepositoryAdapter.findById(USER_1, id)
                 .orElseThrow(() -> new AssertionError("Transaction must be found"));
@@ -100,8 +95,8 @@ class TransactionPersistenceIntegrationTest extends AbstractPostgresIntegrationT
         transactionRepositoryAdapter.save(tx);
         transactionJpaRepository.flush();
 
-        assertTrue(transactionQueryPortAdapter.existsByWalletId(USER_1, walletId));
-        assertFalse(transactionQueryPortAdapter.existsByWalletId(USER_2, walletId));
+        assertTrue(transactionJpaRepository.existsByOwnerIdAndWalletId(USER_1.value(), walletId.value()));
+        assertFalse(transactionJpaRepository.existsByOwnerIdAndWalletId(USER_2.value(), walletId.value()));
     }
 
     @Test
@@ -130,11 +125,11 @@ class TransactionPersistenceIntegrationTest extends AbstractPostgresIntegrationT
 
         transactionJpaRepository.flush();
 
-        BigDecimal sum = transactionQueryPortAdapter.sumAmountsByWalletId(USER_1, walletId);
+        BigDecimal sum = transactionJpaRepository.sumAmountsByOwnerIdAndWalletId(USER_1.value(), walletId.value());
         assertEquals(0, sum.compareTo(new BigDecimal("70.00")));
 
         // другой пользователь не должен видеть чужие суммы
-        BigDecimal sum2 = transactionQueryPortAdapter.sumAmountsByWalletId(USER_2, walletId);
+        BigDecimal sum2 = transactionJpaRepository.sumAmountsByOwnerIdAndWalletId(USER_2.value(), walletId.value());
         assertEquals(0, sum2.compareTo(BigDecimal.ZERO));
     }
 
@@ -156,12 +151,12 @@ class TransactionPersistenceIntegrationTest extends AbstractPostgresIntegrationT
         transactionRepositoryAdapter.deleteById(USER_2, id);
         transactionJpaRepository.flush();
 
-        assertTrue(transactionQueryPortAdapter.exists(USER_1, id));
+        assertTrue(transactionJpaRepository.existsByOwnerIdAndId(USER_1.value(), id.value()));
 
         transactionRepositoryAdapter.deleteById(USER_1, id);
         transactionJpaRepository.flush();
 
-        assertFalse(transactionQueryPortAdapter.exists(USER_1, id));
+        assertFalse(transactionJpaRepository.existsByOwnerIdAndId(USER_1.value(), id.value()));
     }
 
     @Test

@@ -14,8 +14,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.manrovich.cashflow.application.reference.category.web.dto.CreateCategoryRequest;
-import ru.manrovich.cashflow.application.transaction.web.dto.CreateTransactionRequest;
+import ru.manrovich.cashflow.api.category.dto.CreateCategoryRequest;
+import ru.manrovich.cashflow.api.transaction.dto.CreateTransactionRequest;
+import ru.manrovich.cashflow.api.common.tracing.TraceIdFilter;
 import ru.manrovich.cashflow.domain.kernel.exception.NotFoundException;
 import ru.manrovich.cashflow.testing.web.WebContractTestBase;
 
